@@ -34,12 +34,12 @@ async function seed() {
   const User = conn.models.User || conn.model("User", UserSchema);
 
   const adminEmail = "admin@library.com";
-  const adminPassword = generatePassword();
-
   const existing = await User.findOne({ email: adminEmail });
+
   if (existing) {
     console.log(`Admin already exists: ${adminEmail}`);
   } else {
+    const adminPassword = generatePassword();
     const hashed = await bcrypt.hash(adminPassword, 12);
     await User.create({
       name: "Admin",
@@ -51,12 +51,9 @@ async function seed() {
       isActive: true,
     });
     console.log("Admin created!");
+    console.log(`\nEmail:    ${adminEmail}`);
+    console.log(`Password: ${adminPassword}\n`);
   }
-
-  console.log("\n--- Admin Login Credentials ---");
-  console.log(`Email:    ${adminEmail}`);
-  console.log(`Password: ${adminPassword}`);
-  console.log("-------------------------------\n");
 
   await conn.disconnect();
 }

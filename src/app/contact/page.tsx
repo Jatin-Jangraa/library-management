@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Phone, Mail, MapPin, MessageCircle, Loader2, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,22 @@ export default function ContactPage() {
   const [form, setForm] = useState({ name: "", email: "", phone: "", subject: "", message: "" });
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [settings, setSettings] = useState<any>(null);
+
+  useEffect(() => {
+    fetch("/api/public/content", { cache: "no-store" })
+      .then((r) => r.json())
+      .then((d) => setSettings(d.data?.settings || null))
+      .catch(() => {});
+  }, []);
+
+  const contact = {
+    phone: settings?.contactPhone || config.contact.phone,
+    email: settings?.contactEmail || config.contact.email,
+    address: settings?.address || config.contact.address,
+    whatsapp: settings?.whatsappNumber || config.contact.whatsappNumber,
+  };
+  const libraryName = settings?.libraryName || config.library.name;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,7 +48,7 @@ export default function ContactPage() {
               <div className="p-1.5 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600">
                 <BookOpen className="h-5 w-5 text-white" />
               </div>
-              <span className="text-xl font-bold">{config.library.name}</span>
+              <span className="text-xl font-bold">{libraryName}</span>
             </Link>
             <div className="flex items-center gap-6">
               <Link href="/" className="text-sm text-gray-300 hover:text-white transition-colors">Home</Link>
@@ -56,7 +72,7 @@ export default function ContactPage() {
                   <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-xl"><Phone className="h-6 w-6 text-blue-400" /></div>
                   <div>
                     <h3 className="font-semibold">Phone</h3>
-                    <p className="text-gray-400">{config.contact.phone}</p>
+                    <p className="text-gray-400">{contact.phone}</p>
                   </div>
                 </CardContent>
               </Card>
@@ -65,7 +81,7 @@ export default function ContactPage() {
                   <div className="p-3 bg-purple-500/10 border border-purple-500/20 rounded-xl"><Mail className="h-6 w-6 text-purple-400" /></div>
                   <div>
                     <h3 className="font-semibold">Email</h3>
-                    <p className="text-gray-400">{config.contact.email}</p>
+                    <p className="text-gray-400">{contact.email}</p>
                   </div>
                 </CardContent>
               </Card>
@@ -74,13 +90,13 @@ export default function ContactPage() {
                   <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl"><MapPin className="h-6 w-6 text-emerald-400" /></div>
                   <div>
                     <h3 className="font-semibold">Address</h3>
-                    <p className="text-gray-400">{config.contact.address}</p>
+                    <p className="text-gray-400">{contact.address}</p>
                   </div>
                 </CardContent>
               </Card>
               <Card className="border-gray-800 bg-gray-900/50">
                 <CardContent className="p-6">
-                  <a href={`https://wa.me/${config.contact.whatsappNumber}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-4">
+                  <a href={`https://wa.me/${contact.whatsapp}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-4">
                     <div className="p-3 bg-green-500/10 border border-green-500/20 rounded-xl"><MessageCircle className="h-6 w-6 text-green-400" /></div>
                     <div>
                       <h3 className="font-semibold">WhatsApp</h3>

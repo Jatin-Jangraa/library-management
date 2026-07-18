@@ -78,7 +78,14 @@ async function seed() {
     )
   );
 
-  await Plan.deleteMany({});
+  const existing = await Plan.countDocuments();
+  if (existing > 0) {
+    console.log(`Found ${existing} existing plans. Skipping seed.`);
+    console.log("To re-seed, delete existing plans from the admin panel first.");
+    await conn.disconnect();
+    return;
+  }
+
   const result = await Plan.insertMany(plans);
   console.log(`Inserted ${result.length} plans:`);
   result.forEach((p: any) => console.log(`  - ${p.name} | ₹${p.monthlyFee}/mo | ${p.shiftType}`));

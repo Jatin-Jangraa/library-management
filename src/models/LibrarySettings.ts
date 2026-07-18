@@ -37,7 +37,7 @@ export interface ILibrarySettings extends Document {
 
 const LibrarySettingsSchema = new Schema<ILibrarySettings>(
   {
-    libraryName: { type: String, default: process.env.NEXT_PUBLIC_LIBRARY_NAME || "My Study Library" },
+    libraryName: { type: String, default: process.env.NEXT_PUBLIC_LIBRARY_NAME || "Study Library" },
     logo: String,
     heroHeading: { type: String, default: process.env.NEXT_PUBLIC_HERO_HEADING || "Your Dedicated Study Space" },
     heroDescription: { type: String, default: process.env.NEXT_PUBLIC_HERO_DESCRIPTION || "A quiet, comfortable, and well-equipped study library for serious students." },

@@ -11,8 +11,17 @@ async function getPlans() {
   } catch { return []; }
 }
 
+async function getSettings() {
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/api/public/content`, { cache: "no-store" });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.data?.settings || null;
+  } catch { return null; }
+}
+
 export default async function PlansPage() {
-  const plans = await getPlans();
+  const [plans, settings] = await Promise.all([getPlans(), getSettings()]);
 
   return (
     <div className="min-h-screen bg-gray-950 text-white">
@@ -23,7 +32,7 @@ export default async function PlansPage() {
               <div className="p-1.5 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600">
                 <BookOpen className="h-5 w-5 text-white" />
               </div>
-              <span className="text-xl font-bold">{config.library.name}</span>
+              <span className="text-xl font-bold">{settings?.libraryName || config.library.name}</span>
             </Link>
             <div className="flex items-center gap-6">
               <Link href="/" className="text-sm text-gray-300 hover:text-white transition-colors">Home</Link>
@@ -44,11 +53,13 @@ export default async function PlansPage() {
           </div>
 
           <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-            {(plans.length > 0 ? plans : [
-              { _id: "1", name: "Full Day Access", shiftType: "full_day", monthlyFee: 1500, admissionFee: 200, securityDeposit: 500, facilities: ["WiFi", "AC", "Power Backup", "Locker", "CCTV"], availableSeats: 15 },
-              { _id: "2", name: "Morning Shift", shiftType: "morning", startTime: "06:00", endTime: "14:00", monthlyFee: 800, admissionFee: 100, securityDeposit: 300, facilities: ["WiFi", "AC", "Power Backup"], availableSeats: 8 },
-              { _id: "3", name: "Evening Shift", shiftType: "evening", startTime: "14:00", endTime: "22:00", monthlyFee: 800, admissionFee: 100, securityDeposit: 300, facilities: ["WiFi", "AC", "Power Backup"], availableSeats: 8 },
-            ]).map((plan: any) => (
+            {plans.length === 0 && (
+              <div className="col-span-full text-center py-16">
+                <p className="text-gray-500 text-lg">No plans available yet.</p>
+                <p className="text-gray-600 text-sm mt-2">Please check back later or contact the library for more information.</p>
+              </div>
+            )}
+            {plans.map((plan: any) => (
               <div key={plan._id} className={`bg-gray-900/80 backdrop-blur-xl rounded-2xl border p-8 text-center transition-all duration-300 hover:shadow-lg ${plan.shiftType === "full_day" ? "border-blue-500/50 shadow-blue-500/10 scale-105" : "border-gray-800 hover:border-gray-700"}`}>
                 {plan.shiftType === "full_day" && (
                   <span className="bg-gradient-to-r from-blue-600 to-purple-600 text-white text-xs px-3 py-1 rounded-full">Most Popular</span>

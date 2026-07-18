@@ -119,38 +119,10 @@ export default async function HomePage() {
               </div>
             ))}
             {(!plans || plans.length === 0) && (
-              <>
-                <div className="bg-gray-900/80 backdrop-blur-xl rounded-2xl border border-gray-800 p-8 hover:border-blue-500/30 transition-all duration-300">
-                  <h3 className="text-xl font-bold mb-2 text-white">Full Day</h3>
-                  <p className="text-gray-400 text-sm mb-4">6:00 AM - 10:00 PM</p>
-                  <div className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent mb-6">₹1500<span className="text-sm text-gray-500">/month</span></div>
-                  <ul className="space-y-3 text-sm">
-                    <li className="flex items-center gap-3 text-gray-300"><CheckCircle className="h-4 w-4 text-emerald-400" />All day access</li>
-                    <li className="flex items-center gap-3 text-gray-300"><CheckCircle className="h-4 w-4 text-emerald-400" />WiFi & AC</li>
-                    <li className="flex items-center gap-3 text-gray-300"><CheckCircle className="h-4 w-4 text-emerald-400" />Power backup</li>
-                  </ul>
-                </div>
-                <div className="bg-gray-900/80 backdrop-blur-xl rounded-2xl border border-gray-800 p-8 hover:border-blue-500/30 transition-all duration-300">
-                  <h3 className="text-xl font-bold mb-2 text-white">Morning Shift</h3>
-                  <p className="text-gray-400 text-sm mb-4">6:00 AM - 2:00 PM</p>
-                  <div className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent mb-6">₹800<span className="text-sm text-gray-500">/month</span></div>
-                  <ul className="space-y-3 text-sm">
-                    <li className="flex items-center gap-3 text-gray-300"><CheckCircle className="h-4 w-4 text-emerald-400" />Morning access</li>
-                    <li className="flex items-center gap-3 text-gray-300"><CheckCircle className="h-4 w-4 text-emerald-400" />WiFi & AC</li>
-                    <li className="flex items-center gap-3 text-gray-300"><CheckCircle className="h-4 w-4 text-emerald-400" />Power backup</li>
-                  </ul>
-                </div>
-                <div className="bg-gray-900/80 backdrop-blur-xl rounded-2xl border border-gray-800 p-8 hover:border-blue-500/30 transition-all duration-300">
-                  <h3 className="text-xl font-bold mb-2 text-white">Evening Shift</h3>
-                  <p className="text-gray-400 text-sm mb-4">2:00 PM - 10:00 PM</p>
-                  <div className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent mb-6">₹800<span className="text-sm text-gray-500">/month</span></div>
-                  <ul className="space-y-3 text-sm">
-                    <li className="flex items-center gap-3 text-gray-300"><CheckCircle className="h-4 w-4 text-emerald-400" />Evening access</li>
-                    <li className="flex items-center gap-3 text-gray-300"><CheckCircle className="h-4 w-4 text-emerald-400" />WiFi & AC</li>
-                    <li className="flex items-center gap-3 text-gray-300"><CheckCircle className="h-4 w-4 text-emerald-400" />Power backup</li>
-                  </ul>
-                </div>
-              </>
+              <div className="col-span-full text-center py-12">
+                <p className="text-gray-500 text-lg">No plans available yet.</p>
+                <p className="text-gray-600 text-sm mt-2">Plans will appear here once added by the admin.</p>
+              </div>
             )}
           </div>
         </div>
@@ -164,16 +136,13 @@ export default async function HomePage() {
             <p className="text-gray-400 max-w-xl mx-auto">Everything you need for a productive study session</p>
           </div>
           <div className="grid md:grid-cols-4 gap-6">
-            {(content?.facilities || [
-              { name: "Comfortable Study Seats", icon: "📚" },
-              { name: "High-Speed WiFi", icon: "📶" },
-              { name: "Air Conditioning", icon: "❄️" },
-              { name: "Drinking Water", icon: "💧" },
-              { name: "Power Backup", icon: "⚡" },
-              { name: "Charging Points", icon: "🔌" },
-              { name: "CCTV Security", icon: "🔒" },
-              { name: "Silent Environment", icon: "🤫" },
-            ]).map((facility: any, i: number) => (
+            {(content?.facilities || []).length === 0 && (
+              <div className="col-span-full text-center py-12">
+                <p className="text-gray-500 text-lg">No facilities listed yet.</p>
+                <p className="text-gray-600 text-sm mt-2">Facilities will appear here once added by the admin.</p>
+              </div>
+            )}
+            {(content?.facilities || []).map((facility: any, i: number) => (
               <div key={i} className="text-center p-6 bg-gray-900/50 rounded-2xl border border-gray-800 hover:border-blue-500/30 transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/5 hover:-translate-y-1">
                 <div className="text-3xl mb-3">{facility.icon || "📚"}</div>
                 <h3 className="font-semibold text-white">{facility.name}</h3>
@@ -191,11 +160,13 @@ export default async function HomePage() {
             <p className="text-gray-400 max-w-xl mx-auto">Hear from our satisfied students</p>
           </div>
           <div className="grid md:grid-cols-3 gap-8">
-            {(content?.testimonials || [
-              { name: "Rahul K.", content: "Best library in the area. Very peaceful and well-maintained.", rating: 5 },
-              { name: "Priya M.", content: "Excellent facilities and great study environment.", rating: 5 },
-              { name: "Amit S.", content: "Affordable plans with all necessary amenities.", rating: 4 },
-            ]).map((t: any, i: number) => (
+            {(content?.testimonials || []).length === 0 && (
+              <div className="col-span-full text-center py-12">
+                <p className="text-gray-500 text-lg">No testimonials yet.</p>
+                <p className="text-gray-600 text-sm mt-2">Student testimonials will appear here once added by the admin.</p>
+              </div>
+            )}
+            {(content?.testimonials || []).map((t: any, i: number) => (
               <div key={i} className="bg-gray-900/80 backdrop-blur-xl p-8 rounded-2xl border border-gray-800 hover:border-blue-500/30 transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/5">
                 <div className="flex gap-1 mb-4">
                   {Array.from({ length: t.rating || 5 }).map((_, j) => (
