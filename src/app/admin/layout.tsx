@@ -1,6 +1,6 @@
 "use client";
 
-import { useSession } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { useState, useEffect } from "react";
@@ -9,7 +9,6 @@ import {
   Bell, CalendarDays, UserCog, FileText, MessageSquare, Settings,
   BookOpen, LogOut, Menu, X, DollarSign, BarChart3
 } from "lucide-react";
-import Providers from "@/components/Providers";
 
 const sidebarLinks = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
@@ -78,11 +77,7 @@ function AdminSidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () => voi
 }
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <Providers>
-      <AdminShell>{children}</AdminShell>
-    </Providers>
-  );
+  return <AdminShell>{children}</AdminShell>;
 }
 
 function AdminShell({ children }: { children: React.ReactNode }) {
@@ -117,6 +112,12 @@ function AdminShell({ children }: { children: React.ReactNode }) {
           <div className="flex items-center gap-4">
             <span className="text-sm text-gray-300">{session.user.name}</span>
             <span className="text-xs bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2.5 py-1 rounded-full capitalize font-medium">{session.user.role}</span>
+            <button
+              onClick={() => signOut({ callbackUrl: "/" })}
+              className="text-xs text-gray-400 hover:text-white px-3 py-1.5 rounded-lg hover:bg-gray-800/50 transition-all flex items-center gap-1.5"
+            >
+              <LogOut className="h-3.5 w-3.5" /> Logout
+            </button>
           </div>
         </header>
         <main className="p-4 md:p-6">{children}</main>

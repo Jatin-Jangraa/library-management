@@ -26,6 +26,6 @@ export const config = {
     receipt: process.env.NEXT_PUBLIC_RECEIPT_PREFIX || "RCP",
   },
   session: {
-    maxAgeDays: parseInt(process.env.SESSION_MAX_AGE_DAYS || "15", 10),
+    maxAgeDays: parseInt(process.env.SESSION_MAX_AGE_DAYS || "365", 10),
   },
 } as const;

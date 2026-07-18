@@ -22,7 +22,7 @@ export default function AdmissionsPage() {
   const [showAdd, setShowAdd] = useState(false);
   const [form, setForm] = useState({
     studentId: "", planId: "", seatId: "", startDate: new Date().toISOString().split("T")[0],
-    initialPayment: 0, securityDepositPaid: false, admissionFeePaid: false,
+    initialPayment: "", securityDepositPaid: false, admissionFeePaid: false,
   });
   const [saving, setSaving] = useState(false);
 
@@ -52,7 +52,7 @@ export default function AdmissionsPage() {
     await fetch("/api/admin/admissions", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
+      body: JSON.stringify({ ...form, initialPayment: Number(form.initialPayment) || 0 }),
     });
     setShowAdd(false);
     fetchData();
@@ -113,7 +113,7 @@ export default function AdmissionsPage() {
 
       <Dialog open={showAdd} onOpenChange={(open) => {
         setShowAdd(open);
-        if (!open) setForm({ studentId: "", planId: "", seatId: "", startDate: new Date().toISOString().split("T")[0], initialPayment: 0, securityDepositPaid: false, admissionFeePaid: false });
+        if (!open) setForm({ studentId: "", planId: "", seatId: "", startDate: new Date().toISOString().split("T")[0], initialPayment: "", securityDepositPaid: false, admissionFeePaid: false });
       }}>
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>New Admission</DialogTitle></DialogHeader>
@@ -162,7 +162,7 @@ export default function AdmissionsPage() {
 
             <div className="border-t pt-4 space-y-3">
               <p className="text-sm font-medium text-gray-500">Initial Payment</p>
-              <div><Label>Amount Paid (₹)</Label><Input type="number" min={0} value={form.initialPayment} onChange={(e) => setForm({ ...form, initialPayment: Number(e.target.value) })} /></div>
+              <div><Label>Amount Paid (₹)</Label><Input type="number" min={0} value={form.initialPayment} onChange={(e) => setForm({ ...form, initialPayment: e.target.value })} /></div>
               <div className="flex items-center gap-3">
                 <Label className="flex items-center gap-2 cursor-pointer">
                   <input type="checkbox" checked={form.admissionFeePaid} onChange={(e) => setForm({ ...form, admissionFeePaid: e.target.checked })} className="rounded" />

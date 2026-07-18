@@ -1,14 +1,13 @@
 "use client";
 
-import { useSession } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import {
   LayoutDashboard, User, Armchair, CreditCard, CalendarDays,
-  Bell, Calendar, MessageSquare, BookOpen, Menu, X
+  Bell, Calendar, MessageSquare, BookOpen, Menu, X, LogOut
 } from "lucide-react";
-import Providers from "@/components/Providers";
 import { config } from "@/lib/config";
 
 const studentLinks = [
@@ -65,7 +64,7 @@ function StudentSidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
 }
 
 export default function StudentLayout({ children }: { children: React.ReactNode }) {
-  return <Providers><StudentShell>{children}</StudentShell></Providers>;
+  return <StudentShell>{children}</StudentShell>;
 }
 
 function StudentShell({ children }: { children: React.ReactNode }) {
@@ -96,6 +95,12 @@ function StudentShell({ children }: { children: React.ReactNode }) {
           <div className="hidden lg:block" />
           <div className="flex items-center gap-4">
             <span className="text-sm text-gray-300">{session.user?.name}</span>
+            <button
+              onClick={() => signOut({ callbackUrl: "/" })}
+              className="text-xs text-gray-400 hover:text-white px-3 py-1.5 rounded-lg hover:bg-gray-800/50 transition-all flex items-center gap-1.5"
+            >
+              <LogOut className="h-3.5 w-3.5" /> Logout
+            </button>
           </div>
         </header>
         <main className="p-4 md:p-6">{children}</main>

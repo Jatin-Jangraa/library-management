@@ -39,7 +39,7 @@ export default function StudentsPage() {
   };
   const [studentForm, setStudentForm] = useState(emptyStudent);
 
-  const emptyAdmission = { planId: "", seatId: "", startDate: new Date().toISOString().split("T")[0], initialPayment: 0 };
+  const emptyAdmission = { planId: "", seatId: "", startDate: new Date().toISOString().split("T")[0], initialPayment: "" };
   const [admissionForm, setAdmissionForm] = useState(emptyAdmission);
 
   const [saving, setSaving] = useState(false);
@@ -398,7 +398,7 @@ export default function StudentsPage() {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div><Label className="text-gray-300">Start Date</Label><Input type="date" value={admissionForm.startDate} onChange={(e) => setAdmissionForm({ ...admissionForm, startDate: e.target.value })} className="bg-gray-800/50 border-gray-700 text-white h-11" /></div>
-                  <div><Label className="text-gray-300">Amount Paid (₹)</Label><Input type="number" min={0} value={admissionForm.initialPayment} onChange={(e) => setAdmissionForm({ ...admissionForm, initialPayment: Number(e.target.value) })} className="bg-gray-800/50 border-gray-700 text-white h-11" /></div>
+                  <div><Label className="text-gray-300">Amount Paid (₹)</Label><Input type="number" min={0} value={admissionForm.initialPayment} onChange={(e) => setAdmissionForm({ ...admissionForm, initialPayment: e.target.value })} className="bg-gray-800/50 border-gray-700 text-white h-11" /></div>
                 </div>
               </div>
             )}

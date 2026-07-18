@@ -147,7 +147,40 @@ export async function PATCH(req: NextRequest) {
       return success({ payment, newEndDate }, `Payment recorded. Valid until ${newEndDate.toLocaleDateString()}`);
     }
 
-    return badRequest("Invalid action. Use 'extend' or 'pay'");
+    if (action === "clearPending") {
+      const membership = await Membership.findOne({ studentId: assignment.studentId._id, status: "active" });
+      if (!membership || (membership.pendingAmount || 0) <= 0) {
+        return badRequest("No pending amount to clear");
+      }
+
+      const pendingAmount = membership.pendingAmount;
+      const receiptCount = await Payment.countDocuments();
+      const receiptNumber = `RCP-${Date.now()}-${String(receiptCount + 1).padStart(4, "0")}`;
+
+      const payment = await Payment.create({
+        studentId: assignment.studentId._id,
+        membershipId: membership._id,
+        amount: pendingAmount,
+        discount: 0,
+        finalAmount: pendingAmount,
+        method: body.method || "cash",
+        purpose: "pending_clearance",
+        status: "completed",
+        receiptNumber,
+        paymentDate: new Date(),
+        notes: body.notes || "Pending amount cleared",
+        receivedBy: user.id,
+      });
+
+      await Membership.findByIdAndUpdate(membership._id, {
+        amountPaid: (membership.amountPaid || 0) + pendingAmount,
+        pendingAmount: 0,
+      });
+
+      return success({ payment, clearedAmount: pendingAmount }, `₹${pendingAmount} pending amount cleared`);
+    }
+
+    return badRequest("Invalid action. Use 'extend', 'pay', or 'clearPending'");
   } catch (err: any) {
     return error(err.message || "Failed to process");
   }

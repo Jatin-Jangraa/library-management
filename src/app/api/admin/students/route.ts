@@ -46,13 +46,16 @@ export async function GET(req: NextRequest) {
       profileFilter.isArchived = true;
     }
 
-    const total = await StudentProfile.countDocuments(profileFilter);
-    const students = await StudentProfile.find(profileFilter)
+    const allMatching = await StudentProfile.find(profileFilter)
       .populate("userId", "name email phone isActive role lastLogin")
       .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit)
       .lean();
+
+    const students = allMatching
+      .filter((s: any) => s.userId?.role === "student")
+      .slice(skip, skip + limit);
+
+    const total = allMatching.filter((s: any) => s.userId?.role === "student").length;
 
     const studentUserIds = students.map((s: any) => s.userId?._id).filter(Boolean);
     const memberships = await Membership.find({

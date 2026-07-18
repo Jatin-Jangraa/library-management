@@ -58,8 +58,9 @@ export default function SeatsPage() {
   const [successMsg, setSuccessMsg] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
   const [showSeatInfo, setShowSeatInfo] = useState(false);
-  const [payForm, setPayForm] = useState({ amount: 0, method: "cash", months: 1 });
+  const [payForm, setPayForm] = useState({ amount: "", method: "cash", months: 1 });
   const [processing, setProcessing] = useState(false);
+  const [seatPendingAmount, setSeatPendingAmount] = useState(0);
 
   const fetchData = async () => {
     try {
@@ -182,13 +183,32 @@ export default function SeatsPage() {
       const res = await fetch("/api/admin/seats/assign", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ assignmentId, action: "pay", ...payForm }),
+        body: JSON.stringify({ assignmentId, action: "pay", ...payForm, amount: Number(payForm.amount) || 0 }),
       });
       const data = await res.json();
       if (res.ok) {
         setSuccessMsg(data.message);
         setTimeout(() => setSuccessMsg(""), 3000);
-        setPayForm({ amount: 0, method: "cash", months: 1 });
+        setPayForm({ amount: "", method: "cash", months: 1 });
+        fetchData();
+      }
+    } catch {}
+    setProcessing(false);
+  };
+
+  const handleClearPending = async (assignmentId: string) => {
+    setProcessing(true);
+    try {
+      const res = await fetch("/api/admin/seats/assign", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ assignmentId, action: "clearPending", method: payForm.method }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setSuccessMsg(data.message);
+        setTimeout(() => setSuccessMsg(""), 3000);
+        setSeatPendingAmount(0);
         fetchData();
       }
     } catch {}
@@ -215,6 +235,13 @@ export default function SeatsPage() {
   const totalSeats = seats.length;
   const availableSeats = seats.filter((s) => s.status === "available").length;
   const occupiedSeats = seats.filter((s) => s.status === "occupied").length;
+
+  const assignedStudentIds = new Set(
+    seats
+      .filter((s) => s.currentAssignment?.studentId?._id)
+      .map((s) => s.currentAssignment.studentId._id.toString())
+  );
+  const availableStudents = students.filter((s: any) => s.userId && !assignedStudentIds.has(s.userId._id.toString()));
 
   return (
     <div className="space-y-6">
@@ -286,6 +313,7 @@ export default function SeatsPage() {
                   setShowAssign(true);
                 } else if (seat.status === "occupied") {
                   setSelectedSeat(seat);
+                  setSeatPendingAmount(seat.pendingAmount || 0);
                   setShowSeatInfo(true);
                 }
               }}
@@ -363,7 +391,7 @@ export default function SeatsPage() {
               <Select value={assignForm.studentId} onValueChange={(v) => setAssignForm({ ...assignForm, studentId: v })}>
                 <SelectTrigger className="bg-gray-800/50 border-gray-700 text-white h-11"><SelectValue placeholder="Pick a student" /></SelectTrigger>
                 <SelectContent className="bg-gray-800 border-gray-700">
-                  {students.map((s: any) => <SelectItem key={s.userId._id} value={s.userId._id} className="text-white">{s.userId.name} ({s.studentId})</SelectItem>)}
+                  {availableStudents.map((s: any) => <SelectItem key={s.userId._id} value={s.userId._id} className="text-white">{s.userId.name} ({s.studentId})</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
@@ -389,7 +417,7 @@ export default function SeatsPage() {
         </DialogContent>
       </Dialog>
       {/* Seat Info Dialog */}
-      <Dialog open={showSeatInfo} onOpenChange={(open) => { setShowSeatInfo(open); if (!open) { setSelectedSeat(null); setPayForm({ amount: 0, method: "cash", months: 1 }); } }}>
+      <Dialog open={showSeatInfo} onOpenChange={(open) => { setShowSeatInfo(open); if (!open) { setSelectedSeat(null); setPayForm({ amount: "", method: "cash", months: 1 }); } }}>
         <DialogContent className="bg-gray-900 border-gray-800 max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-white text-xl flex items-center gap-3">
@@ -454,7 +482,7 @@ export default function SeatsPage() {
                         type="number"
                         min={0}
                         value={payForm.amount}
-                        onChange={(e) => setPayForm({ ...payForm, amount: Number(e.target.value) })}
+                        onChange={(e) => setPayForm({ ...payForm, amount: e.target.value })}
                         className="bg-gray-800/50 border-gray-700 text-white h-10"
                       />
                     </div>
@@ -486,13 +514,29 @@ export default function SeatsPage() {
                   </div>
                   <Button
                     onClick={() => handlePayAndExtend(a._id)}
-                    disabled={processing || payForm.amount <= 0}
+                    disabled={processing || !payForm.amount || Number(payForm.amount) <= 0}
                     className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white h-11"
                   >
                     {processing ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <CreditCard className="h-4 w-4 mr-2" />}
                     Pay ₹{payForm.amount || 0} & Extend {payForm.months} Month{payForm.months > 1 ? "s" : ""}
                   </Button>
                 </div>
+
+                {seatPendingAmount > 0 && (
+                  <div className="bg-amber-500/10 rounded-xl p-4 space-y-3 border border-amber-500/30">
+                    <p className="text-sm text-amber-400 font-medium flex items-center gap-2">
+                      <CreditCard className="h-4 w-4" /> Pending Fee: ₹{seatPendingAmount}
+                    </p>
+                    <Button
+                      onClick={() => handleClearPending(a._id)}
+                      disabled={processing}
+                      className="w-full bg-amber-600 hover:bg-amber-700 text-white h-11"
+                    >
+                      {processing ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <CreditCard className="h-4 w-4 mr-2" />}
+                      Clear Pending ₹{seatPendingAmount}
+                    </Button>
+                  </div>
+                )}
 
                 {/* Extend Without Payment */}
                 <Button

@@ -22,10 +22,15 @@ export default function SettingsPage() {
 
   const handleSave = async () => {
     setSaving(true);
+    const payload = {
+      ...settings,
+      lateFeeAmount: Number(settings.lateFeeAmount) || 0,
+      membershipExpiryGraceDays: Number(settings.membershipExpiryGraceDays) || 0,
+    };
     await fetch("/api/admin/settings", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(settings),
+      body: JSON.stringify(payload),
     });
     setSaving(false);
     alert("Settings saved!");
@@ -83,9 +88,9 @@ export default function SettingsPage() {
             <span className="text-sm">Enable late fee</span>
           </label>
           {settings.lateFeeEnabled && (
-            <div className="max-w-xs"><Label>Late Fee Amount (₹)</Label><Input type="number" value={settings.lateFeeAmount || 0} onChange={(e) => setSettings({ ...settings, lateFeeAmount: Number(e.target.value) })} /></div>
+            <div className="max-w-xs"><Label>Late Fee Amount (₹)</Label><Input type="number" value={settings.lateFeeAmount || ""} onChange={(e) => setSettings({ ...settings, lateFeeAmount: e.target.value })} /></div>
           )}
-          <div className="max-w-xs"><Label>Expiry Grace Days</Label><Input type="number" value={settings.membershipExpiryGraceDays || 0} onChange={(e) => setSettings({ ...settings, membershipExpiryGraceDays: Number(e.target.value) })} /></div>
+          <div className="max-w-xs"><Label>Expiry Grace Days</Label><Input type="number" value={settings.membershipExpiryGraceDays || ""} onChange={(e) => setSettings({ ...settings, membershipExpiryGraceDays: e.target.value })} /></div>
         </CardContent>
       </Card>
 

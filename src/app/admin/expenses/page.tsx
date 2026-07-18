@@ -21,7 +21,7 @@ export default function ExpensesPage() {
   const [showAdd, setShowAdd] = useState(false);
   const [month, setMonth] = useState(new Date().toISOString().slice(0, 7));
   const [form, setForm] = useState({
-    date: new Date().toISOString().split("T")[0], category: "", amount: 0,
+    date: new Date().toISOString().split("T")[0], category: "", amount: "",
     paymentMethod: "cash", description: "", vendor: "", notes: "",
   });
   const [saving, setSaving] = useState(false);
@@ -42,7 +42,7 @@ export default function ExpensesPage() {
     await fetch("/api/admin/expenses", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...form, amount: Number(form.amount) }),
+      body: JSON.stringify({ ...form, amount: Number(form.amount) || 0 }),
     });
     setShowAdd(false);
     fetchExpenses();
@@ -116,7 +116,7 @@ export default function ExpensesPage() {
               </Select>
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <div><Label>Amount (₹) *</Label><Input type="number" value={form.amount} onChange={(e) => setForm({ ...form, amount: Number(e.target.value) })} /></div>
+              <div><Label>Amount (₹) *</Label><Input type="number" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} /></div>
               <div>
                 <Label>Payment Method</Label>
                 <Select value={form.paymentMethod} onValueChange={(v) => setForm({ ...form, paymentMethod: v })}>

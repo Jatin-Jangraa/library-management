@@ -21,7 +21,7 @@ export default function PaymentsPage() {
   const [showAdd, setShowAdd] = useState(false);
   const [students, setStudents] = useState<any[]>([]);
   const [form, setForm] = useState({
-    studentId: "", amount: 0, method: "cash", purpose: "monthly_fee", notes: "", discount: 0, paymentDate: new Date().toISOString().split("T")[0],
+    studentId: "", amount: "", method: "cash", purpose: "monthly_fee", notes: "", discount: "", paymentDate: new Date().toISOString().split("T")[0],
   });
   const [saving, setSaving] = useState(false);
 
@@ -121,8 +121,8 @@ export default function PaymentsPage() {
               </Select>
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <div><Label>Amount (₹) *</Label><Input type="number" value={form.amount} onChange={(e) => setForm({ ...form, amount: Number(e.target.value) })} /></div>
-              <div><Label>Discount (₹)</Label><Input type="number" value={form.discount} onChange={(e) => setForm({ ...form, discount: Number(e.target.value) })} /></div>
+              <div><Label>Amount (₹) *</Label><Input type="number" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} /></div>
+              <div><Label>Discount (₹)</Label><Input type="number" value={form.discount} onChange={(e) => setForm({ ...form, discount: e.target.value })} /></div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>

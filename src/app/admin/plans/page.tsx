@@ -19,8 +19,8 @@ export default function PlansPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const emptyForm = {
     name: "", description: "", shiftType: "full_day", startTime: "", endTime: "",
-    monthlyFee: 0, admissionFee: 0, securityDeposit: 0, duration: 1,
-    durationUnit: "months", gracePeriod: 0, lateFee: 0, facilities: "",
+    monthlyFee: "", admissionFee: "", securityDeposit: "", duration: "",
+    durationUnit: "months", gracePeriod: "", lateFee: "", facilities: "",
   };
   const [formData, setFormData] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
@@ -42,13 +42,13 @@ export default function PlansPage() {
       shiftType: plan.shiftType || "full_day",
       startTime: plan.startTime || "",
       endTime: plan.endTime || "",
-      monthlyFee: plan.monthlyFee || 0,
-      admissionFee: plan.admissionFee || 0,
-      securityDeposit: plan.securityDeposit || 0,
-      duration: plan.duration || 1,
+      monthlyFee: String(plan.monthlyFee || ""),
+      admissionFee: String(plan.admissionFee || ""),
+      securityDeposit: String(plan.securityDeposit || ""),
+      duration: String(plan.duration || ""),
       durationUnit: plan.durationUnit || "months",
-      gracePeriod: plan.gracePeriod || 0,
-      lateFee: plan.lateFee || 0,
+      gracePeriod: String(plan.gracePeriod || ""),
+      lateFee: String(plan.lateFee || ""),
       facilities: (plan.facilities || []).join(", "),
     });
     setShowAdd(true);
@@ -174,10 +174,10 @@ export default function PlansPage() {
               </div>
             )}
             <div className="grid grid-cols-2 gap-4">
-              <div><Label>Monthly Fee (₹) *</Label><Input type="number" value={formData.monthlyFee} onChange={(e) => setFormData({ ...formData, monthlyFee: Number(e.target.value) })} /></div>
-              <div><Label>Admission Fee (₹)</Label><Input type="number" value={formData.admissionFee} onChange={(e) => setFormData({ ...formData, admissionFee: Number(e.target.value) })} /></div>
-              <div><Label>Security Deposit (₹)</Label><Input type="number" value={formData.securityDeposit} onChange={(e) => setFormData({ ...formData, securityDeposit: Number(e.target.value) })} /></div>
-              <div><Label>Duration *</Label><Input type="number" value={formData.duration} onChange={(e) => setFormData({ ...formData, duration: Number(e.target.value) })} /></div>
+              <div><Label>Monthly Fee (₹) *</Label><Input type="number" value={formData.monthlyFee} onChange={(e) => setFormData({ ...formData, monthlyFee: e.target.value })} /></div>
+              <div><Label>Admission Fee (₹)</Label><Input type="number" value={formData.admissionFee} onChange={(e) => setFormData({ ...formData, admissionFee: e.target.value })} /></div>
+              <div><Label>Security Deposit (₹)</Label><Input type="number" value={formData.securityDeposit} onChange={(e) => setFormData({ ...formData, securityDeposit: e.target.value })} /></div>
+              <div><Label>Duration *</Label><Input type="number" value={formData.duration} onChange={(e) => setFormData({ ...formData, duration: e.target.value })} /></div>
               <div>
                 <Label>Duration Unit</Label>
                 <Select value={formData.durationUnit} onValueChange={(v) => setFormData({ ...formData, durationUnit: v })}>
@@ -189,7 +189,7 @@ export default function PlansPage() {
                   </SelectContent>
                 </Select>
               </div>
-              <div><Label>Late Fee (₹)</Label><Input type="number" value={formData.lateFee} onChange={(e) => setFormData({ ...formData, lateFee: Number(e.target.value) })} /></div>
+              <div><Label>Late Fee (₹)</Label><Input type="number" value={formData.lateFee} onChange={(e) => setFormData({ ...formData, lateFee: e.target.value })} /></div>
             </div>
             <div><Label>Facilities (comma separated)</Label><Input placeholder="WiFi, AC, Power backup" value={formData.facilities} onChange={(e) => setFormData({ ...formData, facilities: e.target.value })} /></div>
             <Button onClick={handleSave} disabled={saving} className="w-full">
