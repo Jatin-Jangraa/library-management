@@ -4,6 +4,8 @@ import { requireOwner, success, error, badRequest } from "@/lib/api-utils";
 import User from "@/models/User";
 import StudentProfile from "@/models/StudentProfile";
 import Membership from "@/models/Membership";
+import MembershipPlan from "@/models/MembershipPlan";
+import Seat from "@/models/Seat";
 import LibrarySettings from "@/models/LibrarySettings";
 import { generateStudentId, generateRandomPassword } from "@/lib/utils";
 

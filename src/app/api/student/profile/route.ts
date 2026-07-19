@@ -3,6 +3,8 @@ import { connectDB } from "@/lib/db";
 import { requireAuth, success, error } from "@/lib/api-utils";
 import StudentProfile from "@/models/StudentProfile";
 import Membership from "@/models/Membership";
+import MembershipPlan from "@/models/MembershipPlan";
+import Seat from "@/models/Seat";
 import Payment from "@/models/Payment";
 import Attendance from "@/models/Attendance";
 

@@ -4,6 +4,7 @@ import { requireOwner, success, error, badRequest } from "@/lib/api-utils";
 import Seat from "@/models/Seat";
 import SeatAssignment from "@/models/SeatAssignment";
 import Membership from "@/models/Membership";
+import MembershipPlan from "@/models/MembershipPlan";
 
 export async function POST(req: NextRequest) {
   try {

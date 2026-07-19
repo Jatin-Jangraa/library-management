@@ -4,6 +4,8 @@ import { requireOwner, success, error, badRequest } from "@/lib/api-utils";
 import User from "@/models/User";
 import StudentProfile from "@/models/StudentProfile";
 import Membership from "@/models/Membership";
+import MembershipPlan from "@/models/MembershipPlan";
+import Seat from "@/models/Seat";
 import Payment from "@/models/Payment";
 import Attendance from "@/models/Attendance";
 import SeatAssignment from "@/models/SeatAssignment";
