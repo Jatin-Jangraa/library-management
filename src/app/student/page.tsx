@@ -130,6 +130,9 @@ export default function StudentDashboard() {
             <Armchair className="h-5 w-5 mx-auto mb-1 text-blue-400" />
             <p className="text-xl font-bold text-white">{membership?.seatId?.seatNumber || "—"}</p>
             <p className="text-xs text-gray-400">My Seat</p>
+            <Badge variant={membership?.seatId ? "success" : "outline"} className="mt-2 text-xs">
+              {membership?.seatId ? "Active" : "No Plan"}
+            </Badge>
           </CardContent>
         </Card>
         <Card className="border-gray-800 bg-gray-900/50">
@@ -213,7 +216,7 @@ export default function StudentDashboard() {
         <Card className="border-gray-800 bg-gray-900/50">
           <CardContent className="py-12 text-center">
             <Armchair className="h-12 w-12 mx-auto text-gray-600 mb-4" />
-            <p className="text-gray-400 text-lg">No active membership</p>
+            <p className="text-gray-400 text-lg">No Plan</p>
             <p className="text-sm text-gray-500 mt-1">Contact the admin to get started</p>
           </CardContent>
         </Card>

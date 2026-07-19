@@ -7,17 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Loader2, Trash2, Layers, CheckCircle, Armchair, UserMinus, X } from "lucide-react";
-
-function oneMonthLater() {
-  const d = new Date();
-  d.setMonth(d.getMonth() + 1);
-  return d.toISOString().split("T")[0];
-}
-
-function today() {
-  return new Date().toISOString().split("T")[0];
-}
+import { Plus, Loader2, Trash2, Layers, CheckCircle, Armchair, UserMinus } from "lucide-react";
 
 const statusColors: Record<string, string> = {
   available: "bg-emerald-500",
@@ -44,14 +34,13 @@ export default function SeatsPage() {
   const [selectedSeat, setSelectedSeat] = useState<any>(null);
   const [seatForm, setSeatForm] = useState({ seatNumber: "" });
   const [bulkForm, setBulkForm] = useState({ prefix: "", startNumber: "1", count: "1" });
-  const [assignForm, setAssignForm] = useState({ studentId: "", shiftType: "full_day", planId: "", startDate: today(), endDate: oneMonthLater() });
+  const [assignForm, setAssignForm] = useState({ studentId: "", planId: "" });
   const [students, setStudents] = useState<any[]>([]);
   const [plans, setPlans] = useState<any[]>([]);
   const [bulkLoading, setBulkLoading] = useState(false);
   const [successMsg, setSuccessMsg] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
   const [showSeatInfo, setShowSeatInfo] = useState(false);
-  const [processing, setProcessing] = useState(false);
   const [addLoading, setAddLoading] = useState(false);
   const [assignLoading, setAssignLoading] = useState(false);
   const [releaseLoading, setReleaseLoading] = useState(false);
@@ -80,7 +69,7 @@ export default function SeatsPage() {
   };
 
   const resetAssignForm = () => {
-    setAssignForm({ studentId: "", shiftType: "full_day", planId: "", startDate: today(), endDate: oneMonthLater() });
+    setAssignForm({ studentId: "", planId: "" });
   };
 
   const handleAddSeat = async () => {
@@ -130,13 +119,13 @@ export default function SeatsPage() {
 
   const handleAssign = async () => {
     setErrorMsg("");
-    if (!selectedSeat || !assignForm.studentId) return;
+    if (!selectedSeat || !assignForm.studentId || !assignForm.planId) return;
     setAssignLoading(true);
     try {
       const res = await fetch("/api/admin/seats/assign", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...assignForm, seatId: selectedSeat._id }),
+        body: JSON.stringify({ seatId: selectedSeat._id, studentId: assignForm.studentId, planId: assignForm.planId }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -346,35 +335,17 @@ export default function SeatsPage() {
               </Select>
             </div>
             <div>
-              <Label className="text-gray-300">Shift</Label>
-              <Select value={assignForm.shiftType} onValueChange={(v) => setAssignForm({ ...assignForm, shiftType: v })}>
-                <SelectTrigger className="bg-gray-800/50 border-gray-700 text-white h-11"><SelectValue /></SelectTrigger>
-                <SelectContent className="bg-gray-800 border-gray-700">
-                  <SelectItem value="full_day" className="text-white">Full Day</SelectItem>
-                  <SelectItem value="morning" className="text-white">Morning</SelectItem>
-                  <SelectItem value="evening" className="text-white">Evening</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
               <Label className="text-gray-300">Membership Plan</Label>
-              <Select value={assignForm.planId} onValueChange={(v) => {
-                const selected = plans.find((p: any) => p._id === v);
-                setAssignForm({ ...assignForm, planId: v, shiftType: selected?.shiftType || assignForm.shiftType });
-              }}>
+              <Select value={assignForm.planId} onValueChange={(v) => setAssignForm({ ...assignForm, planId: v })}>
                 <SelectTrigger className="bg-gray-800/50 border-gray-700 text-white h-11"><SelectValue placeholder="Select a plan" /></SelectTrigger>
                 <SelectContent className="bg-gray-800 border-gray-700">
-                  {plans.filter((p: any) => !assignForm.shiftType || p.shiftType === assignForm.shiftType).map((p: any) => (
-                    <SelectItem key={p._id} value={p._id} className="text-white">{p.name} — ₹{p.monthlyFee}/mo</SelectItem>
+                  {plans.map((p: any) => (
+                    <SelectItem key={p._id} value={p._id} className="text-white">{p.name} — ₹{p.monthlyFee}/mo ({p.duration} {p.durationUnit})</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div><Label className="text-gray-300">From</Label><Input type="date" value={assignForm.startDate} onChange={(e) => setAssignForm({ ...assignForm, startDate: e.target.value })} className="bg-gray-800/50 border-gray-700 text-white h-11" /></div>
-              <div><Label className="text-gray-300">Until</Label><Input type="date" value={assignForm.endDate} onChange={(e) => setAssignForm({ ...assignForm, endDate: e.target.value })} className="bg-gray-800/50 border-gray-700 text-white h-11" /></div>
-            </div>
-            <Button onClick={handleAssign} disabled={assignLoading || !assignForm.studentId} className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white h-12 text-base">
+            <Button onClick={handleAssign} disabled={assignLoading || !assignForm.studentId || !assignForm.planId} className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white h-12 text-base">
               {assignLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
               Assign Seat
             </Button>

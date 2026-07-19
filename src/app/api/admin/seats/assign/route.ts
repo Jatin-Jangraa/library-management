@@ -5,6 +5,7 @@ import User from "@/models/User";
 import Seat from "@/models/Seat";
 import SeatAssignment from "@/models/SeatAssignment";
 import Membership from "@/models/Membership";
+import MembershipPlan from "@/models/MembershipPlan";
 
 export async function POST(req: NextRequest) {
   try {
@@ -13,7 +14,7 @@ export async function POST(req: NextRequest) {
 
     await connectDB();
     const body = await req.json();
-    const { seatId, studentId, shiftType, startDate, endDate, planId } = body;
+    const { seatId, studentId, planId } = body;
 
     const seat = await Seat.findById(seatId);
     if (!seat) return badRequest("Seat not found");
@@ -30,22 +31,25 @@ export async function POST(req: NextRequest) {
       return badRequest(`This student already has seat ${assignedSeat?.seatNumber || "assigned"}. Release it first.`);
     }
 
+    if (!planId) return badRequest("Membership plan is required");
+
+    const plan = await MembershipPlan.findById(planId);
+    if (!plan) return badRequest("Plan not found");
+
+    const shiftType = plan.shiftType === "custom" ? "full_day" : plan.shiftType;
+
     if (shiftType === "full_day") {
       const existingFullDay = await SeatAssignment.findOne({
         seatId,
         shiftType: "full_day",
         isActive: true,
-        startDate: { $lte: new Date(endDate) },
-        endDate: { $gte: new Date(startDate) },
       });
-      if (existingFullDay) return badRequest("Seat already occupied for full day in this period");
+      if (existingFullDay) return badRequest("Seat already occupied for full day");
     } else {
       const existingFullDay = await SeatAssignment.findOne({
         seatId,
         shiftType: "full_day",
         isActive: true,
-        startDate: { $lte: new Date(endDate) },
-        endDate: { $gte: new Date(startDate) },
       });
       if (existingFullDay) return badRequest("Seat is assigned to a full-day student in this period");
 
@@ -53,10 +57,18 @@ export async function POST(req: NextRequest) {
         seatId,
         shiftType,
         isActive: true,
-        startDate: { $lte: new Date(endDate) },
-        endDate: { $gte: new Date(startDate) },
       });
-      if (existingSameShift) return badRequest(`Seat already occupied for ${shiftType} shift in this period`);
+      if (existingSameShift) return badRequest(`Seat already occupied for ${shiftType} shift`);
+    }
+
+    const startDate = new Date();
+    const endDate = new Date(startDate);
+    if (plan.durationUnit === "months") {
+      endDate.setMonth(endDate.getMonth() + plan.duration);
+    } else if (plan.durationUnit === "weeks") {
+      endDate.setDate(endDate.getDate() + plan.duration * 7);
+    } else {
+      endDate.setDate(endDate.getDate() + plan.duration);
     }
 
     const assignment = await SeatAssignment.create({
@@ -72,8 +84,8 @@ export async function POST(req: NextRequest) {
 
     const existingMembership = await Membership.findOne({ studentId, status: "active" });
     if (existingMembership) {
-      await Membership.findByIdAndUpdate(existingMembership._id, { seatId, shiftType });
-    } else if (planId) {
+      await Membership.findByIdAndUpdate(existingMembership._id, { seatId, shiftType, planId, startDate, endDate });
+    } else {
       await Membership.create({
         studentId,
         planId,
@@ -82,7 +94,7 @@ export async function POST(req: NextRequest) {
         startDate,
         endDate,
         status: "active",
-        totalAmount: 0,
+        totalAmount: plan.monthlyFee,
         amountPaid: 0,
         assignedBy: user.id,
       });
@@ -146,15 +158,32 @@ export async function DELETE(req: NextRequest) {
       if (!assignment) return badRequest("Assignment not found");
 
       const seatToUpdate = assignment.seatId;
+      const studentToUnassign = assignment.studentId;
       await SeatAssignment.findByIdAndUpdate(assignmentId, { isActive: false });
       await Seat.findByIdAndUpdate(seatToUpdate, { status: "available" });
+
+      await Membership.findOneAndUpdate(
+        { studentId: studentToUnassign, status: "active" },
+        { seatId: null, status: "cancelled" }
+      );
 
       return success(null, "Seat released");
     }
 
     if (seatId) {
+      const activeAssignments = await SeatAssignment.find({ seatId, isActive: true });
+      const studentIds = activeAssignments.map((a) => a.studentId);
+
       await SeatAssignment.updateMany({ seatId, isActive: true }, { isActive: false });
       await Seat.findByIdAndUpdate(seatId, { status: "available" });
+
+      if (studentIds.length > 0) {
+        await Membership.updateMany(
+          { studentId: { $in: studentIds }, status: "active", seatId: seatId },
+          { seatId: null, status: "cancelled" }
+        );
+      }
+
       return success(null, "Seat released");
     }
   } catch (err: any) {

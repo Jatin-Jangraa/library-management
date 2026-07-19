@@ -44,7 +44,7 @@ export default function StudentSeatPage() {
               <h2 className="text-3xl font-bold text-white mb-2">Seat {membership.seatId.seatNumber}</h2>
               <div className="flex justify-center gap-3 flex-wrap">
                 <Badge variant="success" className="text-sm px-4 py-1">
-                  {membership.shiftType?.replace("_", " ").toUpperCase()}
+                  Active
                 </Badge>
                 {membership.planId?.startTime && membership.planId?.endTime && (
                   <Badge variant="outline" className="text-sm px-4 py-1 text-gray-300">
@@ -134,7 +134,7 @@ export default function StudentSeatPage() {
         <Card className="border-gray-800 bg-gray-900/50">
           <CardContent className="py-12 text-center">
             <Armchair className="h-12 w-12 mx-auto text-gray-600 mb-4" />
-            <p className="text-gray-400 text-lg">No seat assigned yet</p>
+            <p className="text-gray-400 text-lg">No Plan</p>
             <p className="text-sm text-gray-500 mt-1">Contact the admin to get a seat</p>
           </CardContent>
         </Card>
