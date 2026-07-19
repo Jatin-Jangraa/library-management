@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
     const plan = await MembershipPlan.findById(planId);
     if (!plan) return error("Plan not found", 404);
 
-    const amount = plan.monthlyFee + plan.admissionFee + plan.securityDeposit;
+    const amount = plan.monthlyFee + plan.securityDeposit;
 
     const payment = await Payment.create({
       studentId: user.id,
@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
       discount: 0,
       finalAmount: amount,
       method: "online",
-      purpose: "admission",
+      purpose: "monthly_fee",
       status: "completed",
       razorpayOrderId: razorpay_order_id,
       razorpayPaymentId: razorpay_payment_id,
@@ -69,7 +69,6 @@ export async function POST(req: NextRequest) {
       amountPaid: amount,
       pendingAmount: 0,
       securityDepositPaid: plan.securityDeposit > 0,
-      admissionFeePaid: plan.admissionFee > 0,
     });
 
     payment.membershipId = membership._id;

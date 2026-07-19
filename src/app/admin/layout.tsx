@@ -12,7 +12,7 @@ import {
 
 const sidebarLinks = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/admin/students", label: "Students & Admissions", icon: Users },
+  { href: "/admin/students", label: "Students", icon: Users },
   { href: "/admin/seats", label: "Seats", icon: Armchair },
   { href: "/admin/plans", label: "Plans & Shifts", icon: Calendar },
   { href: "/admin/attendance", label: "Attendance", icon: CalendarDays },

@@ -31,12 +31,9 @@ export async function POST(req: NextRequest) {
       startTime: body.startTime,
       endTime: body.endTime,
       monthlyFee: body.monthlyFee,
-      admissionFee: body.admissionFee || 0,
       securityDeposit: body.securityDeposit || 0,
       duration: body.duration,
       durationUnit: body.durationUnit,
-      gracePeriod: body.gracePeriod || 0,
-      lateFee: body.lateFee || 0,
       facilities: body.facilities || [],
     });
 

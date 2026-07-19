@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
     const plan = await MembershipPlan.findById(body.planId);
     if (!plan) return badRequest("Plan not found");
 
-    const amount = plan.monthlyFee + plan.admissionFee + plan.securityDeposit;
+    const amount = plan.monthlyFee + plan.securityDeposit;
 
     const Razorpay = (await import("razorpay")).default;
     const razorpay = new Razorpay({

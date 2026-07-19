@@ -55,9 +55,6 @@ export default async function PlansPage() {
                   <span className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">₹{plan.monthlyFee}</span>
                   <span className="text-gray-500">/month</span>
                 </div>
-                {plan.admissionFee > 0 && (
-                  <p className="text-sm text-gray-400 mb-1">Admission Fee: ₹{plan.admissionFee}</p>
-                )}
                 {plan.securityDeposit > 0 && (
                   <p className="text-sm text-gray-400 mb-4">Security Deposit: ₹{plan.securityDeposit} (refundable)</p>
                 )}

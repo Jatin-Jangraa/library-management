@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,16 +8,14 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Plus, Search, Eye, Trash2, Loader2, AlertCircle, Users, CheckCircle,
-  CreditCard, Armchair, Edit, X,
+  Armchair,
 } from "lucide-react";
 import { formatCurrency, formatDate } from "@/lib/utils";
 
 export default function StudentsPage() {
   const [students, setStudents] = useState<any[]>([]);
-  const [plans, setPlans] = useState<any[]>([]);
   const [seats, setSeats] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -27,7 +25,6 @@ export default function StudentsPage() {
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showViewDialog, setShowViewDialog] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<any>(null);
-  const [startAdmission, setStartAdmission] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
   const [generatedPassword, setGeneratedPassword] = useState("");
@@ -38,10 +35,6 @@ export default function StudentsPage() {
     fatherName: "", address: "", course: "", gender: "",
   };
   const [studentForm, setStudentForm] = useState(emptyStudent);
-
-  const emptyAdmission = { planId: "", seatId: "", startDate: new Date().toISOString().split("T")[0], initialPayment: "" };
-  const [admissionForm, setAdmissionForm] = useState(emptyAdmission);
-
   const [saving, setSaving] = useState(false);
 
   const handleSearchChange = (value: string) => {
@@ -72,13 +65,8 @@ export default function StudentsPage() {
   };
 
   const fetchMeta = async () => {
-    const [planRes, seatRes] = await Promise.all([
-      fetch("/api/admin/plans"),
-      fetch("/api/admin/seats"),
-    ]);
-    const planData = await planRes.json();
+    const seatRes = await fetch("/api/admin/seats");
     const seatData = await seatRes.json();
-    setPlans(planData.data || []);
     setSeats((seatData.data?.seats || []).filter((s: any) => !s.currentAssignment));
   };
 
@@ -104,27 +92,8 @@ export default function StudentsPage() {
       const pwd = data.data?.generatedPassword;
       if (pwd) setGeneratedPassword(pwd);
 
-      if (startAdmission && admissionForm.planId) {
-        const newUserId = data.data?.user?._id;
-        if (newUserId) {
-          await fetch("/api/admin/admissions", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              studentId: newUserId,
-              planId: admissionForm.planId,
-              seatId: admissionForm.seatId || undefined,
-              startDate: admissionForm.startDate,
-              initialPayment: admissionForm.initialPayment,
-            }),
-          });
-        }
-      }
-
       setShowAddDialog(false);
       setStudentForm(emptyStudent);
-      setAdmissionForm(emptyAdmission);
-      setStartAdmission(false);
       setSuccessMsg(pwd ? `Student added! Password: ${pwd}` : "Student added successfully!");
       setTimeout(() => setSuccessMsg(""), 8000);
       fetchStudents();
@@ -165,18 +134,17 @@ export default function StudentsPage() {
 
   const totalStudents = students.length;
   const activeStudents = students.filter((s) => s.currentMembership?.status === "active").length;
-  const pendingPayments = students.reduce((sum: number, s: any) => sum + (s.currentMembership?.pendingAmount || 0), 0);
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white">Students & Admissions</h1>
-          <p className="text-gray-400 text-sm mt-1">Manage students, admissions, and memberships</p>
+          <h1 className="text-2xl font-bold text-white">Students</h1>
+          <p className="text-gray-400 text-sm mt-1">Manage students and memberships</p>
         </div>
         <Button
           onClick={() => { setShowAddDialog(true); fetchMeta(); }}
-          className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg shadow-blue-500/25 text-base px-6 py-5"
+          className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg text-base px-6 py-5"
         >
           <Plus className="h-5 w-5 mr-2" /> Add New Student
         </Button>
@@ -199,7 +167,7 @@ export default function StudentsPage() {
         </div>
       )}
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
         <Card className="border-gray-800 bg-gray-900/50">
           <CardContent className="p-4 text-center">
             <Users className="h-6 w-6 mx-auto mb-1 text-blue-400" />
@@ -212,13 +180,6 @@ export default function StudentsPage() {
             <CheckCircle className="h-6 w-6 mx-auto mb-1 text-emerald-400" />
             <p className="text-2xl font-bold text-emerald-400">{activeStudents}</p>
             <p className="text-xs text-gray-400">Active Members</p>
-          </CardContent>
-        </Card>
-        <Card className="border-gray-800 bg-gray-900/50">
-          <CardContent className="p-4 text-center">
-            <CreditCard className="h-6 w-6 mx-auto mb-1 text-red-400" />
-            <p className="text-2xl font-bold text-red-400">{formatCurrency(pendingPayments)}</p>
-            <p className="text-xs text-gray-400">Pending Payments</p>
           </CardContent>
         </Card>
         <Card className="border-gray-800 bg-gray-900/50">
@@ -279,7 +240,6 @@ export default function StudentsPage() {
                           <span className="font-mono">{s.studentId}</span>
                           {m?.planId?.name && <span>&middot; {m.planId.name}</span>}
                           {m?.seatId?.seatNumber && <span>&middot; Seat {m.seatId.seatNumber}</span>}
-                          {m?.pendingAmount > 0 && <span className="text-red-400">&middot; {formatCurrency(m.pendingAmount)} pending</span>}
                         </div>
                       </div>
                     </div>
@@ -312,8 +272,6 @@ export default function StudentsPage() {
         setShowAddDialog(open);
         if (!open) {
           setStudentForm(emptyStudent);
-          setAdmissionForm(emptyAdmission);
-          setStartAdmission(false);
           setErrorMsg("");
           setGeneratedPassword("");
         }
@@ -329,7 +287,7 @@ export default function StudentsPage() {
               </div>
             )}
 
-            <p className="text-sm text-gray-400">A unique password will be automatically generated for the new student.</p>
+            <p className="text-sm text-gray-400">A unique password will be automatically generated.</p>
 
             <div className="grid grid-cols-2 gap-4">
               <div className="col-span-2"><Label className="text-gray-300">Full Name *</Label><Input value={studentForm.name} onChange={(e) => setStudentForm({ ...studentForm, name: e.target.value })} className="bg-gray-800/50 border-gray-700 text-white h-11" /></div>
@@ -350,62 +308,9 @@ export default function StudentsPage() {
               <div className="col-span-2"><Label className="text-gray-300">Course / Exam</Label><Input value={studentForm.course} onChange={(e) => setStudentForm({ ...studentForm, course: e.target.value })} className="bg-gray-800/50 border-gray-700 text-white h-11" /></div>
             </div>
 
-            {/* Admission Section */}
-            <div className="border-t border-gray-800 pt-4">
-              <button
-                type="button"
-                onClick={() => setStartAdmission(!startAdmission)}
-                className="flex items-center gap-2 text-blue-400 hover:text-blue-300 text-sm font-medium"
-              >
-                {startAdmission ? <X className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
-                {startAdmission ? "Remove Admission" : "Also Start Admission Now"}
-              </button>
-            </div>
-
-            {startAdmission && (
-              <div className="bg-gray-800/30 rounded-xl p-4 space-y-4 border border-gray-700/50">
-                <p className="text-sm text-gray-400 font-medium">Admission Details</p>
-                <div>
-                  <Label className="text-gray-300">Plan *</Label>
-                  <Select value={admissionForm.planId} onValueChange={(v) => setAdmissionForm({ ...admissionForm, planId: v })}>
-                    <SelectTrigger className="bg-gray-800/50 border-gray-700 text-white h-11"><SelectValue placeholder="Select plan" /></SelectTrigger>
-                    <SelectContent className="bg-gray-800 border-gray-700">
-                      {plans.map((p: any) => <SelectItem key={p._id} value={p._id} className="text-white">{p.name} - {formatCurrency(p.monthlyFee)}/mo</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                </div>
-                {admissionForm.planId && (() => {
-                  const plan = plans.find((p: any) => p._id === admissionForm.planId);
-                  if (!plan) return null;
-                  const total = plan.monthlyFee + plan.admissionFee + plan.securityDeposit;
-                  return (
-                    <div className="rounded-lg bg-gray-900/50 p-3 text-sm space-y-1">
-                      <div className="flex justify-between text-gray-300"><span>Monthly Fee</span><span>{formatCurrency(plan.monthlyFee)}</span></div>
-                      <div className="flex justify-between text-gray-300"><span>Admission Fee</span><span>{formatCurrency(plan.admissionFee)}</span></div>
-                      <div className="flex justify-between text-gray-300"><span>Security Deposit</span><span>{formatCurrency(plan.securityDeposit)}</span></div>
-                      <div className="flex justify-between font-medium text-white border-t border-gray-700 pt-1"><span>Total</span><span>{formatCurrency(total)}</span></div>
-                    </div>
-                  );
-                })()}
-                <div>
-                  <Label className="text-gray-300">Seat (optional)</Label>
-                  <Select value={admissionForm.seatId} onValueChange={(v) => setAdmissionForm({ ...admissionForm, seatId: v })}>
-                    <SelectTrigger className="bg-gray-800/50 border-gray-700 text-white h-11"><SelectValue placeholder="No seat" /></SelectTrigger>
-                    <SelectContent className="bg-gray-800 border-gray-700">
-                      {seats.map((s: any) => <SelectItem key={s._id} value={s._id} className="text-white">{s.seatNumber}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div><Label className="text-gray-300">Start Date</Label><Input type="date" value={admissionForm.startDate} onChange={(e) => setAdmissionForm({ ...admissionForm, startDate: e.target.value })} className="bg-gray-800/50 border-gray-700 text-white h-11" /></div>
-                  <div><Label className="text-gray-300">Amount Paid (₹)</Label><Input type="number" min={0} value={admissionForm.initialPayment} onChange={(e) => setAdmissionForm({ ...admissionForm, initialPayment: e.target.value })} className="bg-gray-800/50 border-gray-700 text-white h-11" /></div>
-                </div>
-              </div>
-            )}
-
-            <Button onClick={handleAddStudent} disabled={saving} className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white h-12 text-base">
+            <Button onClick={handleAddStudent} disabled={saving || !studentForm.name || !studentForm.email || !studentForm.phone} className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white h-12 text-base">
               {saving ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : null}
-              {startAdmission ? "Add Student & Start Admission" : "Add Student"}
+              Add Student
             </Button>
           </div>
         </DialogContent>
@@ -447,8 +352,6 @@ export default function StudentsPage() {
                     <div><p className="text-xs text-gray-500">Shift</p><p className="text-white capitalize">{selectedStudent.activeMembership.shiftType?.replace("_", " ")}</p></div>
                     <div><p className="text-xs text-gray-500">Seat</p><p className="text-white">{selectedStudent.activeMembership.seatId?.seatNumber || "Not assigned"}</p></div>
                     <div><p className="text-xs text-gray-500">Expires</p><p className="text-white">{formatDate(selectedStudent.activeMembership.endDate)}</p></div>
-                    <div><p className="text-xs text-gray-500">Total</p><p className="text-white">{formatCurrency(selectedStudent.activeMembership.totalAmount)}</p></div>
-                    <div><p className="text-xs text-gray-500">Pending</p><p className={selectedStudent.activeMembership.pendingAmount > 0 ? "text-red-400 font-medium" : "text-emerald-400"}>{formatCurrency(selectedStudent.activeMembership.pendingAmount)}</p></div>
                   </div>
                 </div>
               )}

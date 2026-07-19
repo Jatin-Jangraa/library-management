@@ -19,8 +19,8 @@ export default function PlansPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const emptyForm = {
     name: "", description: "", shiftType: "full_day", startTime: "", endTime: "",
-    monthlyFee: "", admissionFee: "", securityDeposit: "", duration: "",
-    durationUnit: "months", gracePeriod: "", lateFee: "", facilities: "",
+    monthlyFee: "", securityDeposit: "", duration: "",
+    durationUnit: "months", facilities: "",
   };
   const [formData, setFormData] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
@@ -43,12 +43,9 @@ export default function PlansPage() {
       startTime: plan.startTime || "",
       endTime: plan.endTime || "",
       monthlyFee: String(plan.monthlyFee || ""),
-      admissionFee: String(plan.admissionFee || ""),
       securityDeposit: String(plan.securityDeposit || ""),
       duration: String(plan.duration || ""),
       durationUnit: plan.durationUnit || "months",
-      gracePeriod: String(plan.gracePeriod || ""),
-      lateFee: String(plan.lateFee || ""),
       facilities: (plan.facilities || []).join(", "),
     });
     setShowAdd(true);
@@ -59,11 +56,8 @@ export default function PlansPage() {
     const payload = {
       ...formData,
       monthlyFee: Number(formData.monthlyFee),
-      admissionFee: Number(formData.admissionFee),
       securityDeposit: Number(formData.securityDeposit),
       duration: Number(formData.duration),
-      gracePeriod: Number(formData.gracePeriod),
-      lateFee: Number(formData.lateFee),
       facilities: formData.facilities.split(",").map((f) => f.trim()).filter(Boolean),
     };
 
@@ -99,48 +93,51 @@ export default function PlansPage() {
     fetchPlans();
   };
 
-  if (loading) return <div className="flex justify-center py-20"><Loader2 className="h-8 w-8 animate-spin" /></div>;
+  if (loading) return <div className="flex justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-blue-500" /></div>;
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Plans & Shifts</h1>
-        <Button onClick={() => setShowAdd(true)}><Plus className="h-4 w-4 mr-2" /> Create Plan</Button>
+        <div>
+          <h1 className="text-2xl font-bold text-white">Plans</h1>
+          <p className="text-gray-400 text-sm mt-1">Create and manage library plans</p>
+        </div>
+        <Button onClick={() => setShowAdd(true)} className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg h-11 px-5">
+          <Plus className="h-4 w-4 mr-2" /> Create Plan
+        </Button>
       </div>
 
       <div className="grid md:grid-cols-3 gap-6">
         {plans.map((plan) => (
-          <Card key={plan._id} className={!plan.isActive ? "opacity-50" : ""}>
+          <Card key={plan._id} className={`border-gray-800 bg-gray-900/50 ${!plan.isActive ? "opacity-50" : ""}`}>
             <CardHeader>
               <div className="flex justify-between items-start">
                 <div>
-                  <CardTitle>{plan.name}</CardTitle>
-                  <p className="text-sm text-gray-500 capitalize mt-1">{plan.shiftType.replace("_", " ")} {plan.startTime && `(${plan.startTime} - ${plan.endTime})`}</p>
+                  <CardTitle className="text-white">{plan.name}</CardTitle>
+                  <p className="text-sm text-gray-400 capitalize mt-1">{plan.shiftType.replace("_", " ")} {plan.startTime && `(${plan.startTime} - ${plan.endTime})`}</p>
                 </div>
                 <Badge variant={plan.isActive ? "success" : "secondary"}>{plan.isActive ? "Active" : "Inactive"}</Badge>
               </div>
             </CardHeader>
             <CardContent className="space-y-3">
-              <div className="text-center py-3 border rounded-lg">
-                <span className="text-3xl font-bold text-primary">{formatCurrency(plan.monthlyFee)}</span>
+              <div className="text-center py-3 border border-gray-700 rounded-lg">
+                <span className="text-3xl font-bold text-blue-400">{formatCurrency(plan.monthlyFee)}</span>
                 <span className="text-gray-500">/month</span>
               </div>
               <div className="text-sm space-y-1">
-                <div className="flex justify-between"><span>Admission Fee</span><span>{formatCurrency(plan.admissionFee)}</span></div>
-                <div className="flex justify-between"><span>Security Deposit</span><span>{formatCurrency(plan.securityDeposit)}</span></div>
-                <div className="flex justify-between"><span>Duration</span><span>{plan.duration} {plan.durationUnit}</span></div>
-                {plan.lateFee > 0 && <div className="flex justify-between"><span>Late Fee</span><span>{formatCurrency(plan.lateFee)}</span></div>}
+                {plan.securityDeposit > 0 && <div className="flex justify-between text-gray-300"><span>Security Deposit</span><span>{formatCurrency(plan.securityDeposit)}</span></div>}
+                <div className="flex justify-between text-gray-300"><span>Duration</span><span>{plan.duration} {plan.durationUnit}</span></div>
               </div>
               {plan.facilities?.length > 0 && (
                 <div className="flex flex-wrap gap-1">
-                  {plan.facilities.map((f: string, i: number) => <Badge key={i} variant="outline" className="text-xs">{f}</Badge>)}
+                  {plan.facilities.map((f: string, i: number) => <Badge key={i} variant="outline" className="text-xs border-gray-700 text-gray-400">{f}</Badge>)}
                 </div>
               )}
               <div className="flex gap-2 pt-2">
-                <Button variant="outline" size="sm" className="flex-1" onClick={() => handleEdit(plan)}>
+                <Button variant="outline" size="sm" className="flex-1 border-gray-700 text-gray-300 hover:text-white" onClick={() => handleEdit(plan)}>
                   <Edit className="h-4 w-4 mr-1" /> Edit
                 </Button>
-                <Button variant="outline" size="sm" className="flex-1" onClick={() => handleToggleActive(plan._id, plan.isActive)}>
+                <Button variant="outline" size="sm" className="flex-1 border-gray-700 text-gray-300 hover:text-white" onClick={() => handleToggleActive(plan._id, plan.isActive)}>
                   {plan.isActive ? <><Trash2 className="h-4 w-4 mr-1" /> Deactivate</> : <><Plus className="h-4 w-4 mr-1" /> Reactivate</>}
                 </Button>
               </div>
@@ -150,49 +147,47 @@ export default function PlansPage() {
       </div>
 
       <Dialog open={showAdd} onOpenChange={(open) => { setShowAdd(open); if (!open) { setEditingId(null); setFormData(emptyForm); } }}>
-        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-          <DialogHeader><DialogTitle>{editingId ? "Edit Plan" : "Create New Plan"}</DialogTitle></DialogHeader>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto bg-gray-900 border-gray-800">
+          <DialogHeader><DialogTitle className="text-white text-xl">{editingId ? "Edit Plan" : "Create Plan"}</DialogTitle></DialogHeader>
           <div className="space-y-4">
-            <div><Label>Plan Name *</Label><Input value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} /></div>
-            <div><Label>Description</Label><Textarea value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} /></div>
+            <div><Label className="text-gray-300">Plan Name *</Label><Input value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} className="bg-gray-800/50 border-gray-700 text-white h-11" /></div>
+            <div><Label className="text-gray-300">Description</Label><Textarea value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} className="bg-gray-800/50 border-gray-700 text-white" /></div>
             <div>
-              <Label>Shift Type *</Label>
+              <Label className="text-gray-300">Shift Type *</Label>
               <Select value={formData.shiftType} onValueChange={(v) => setFormData({ ...formData, shiftType: v })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="full_day">Full Day</SelectItem>
-                  <SelectItem value="morning">Morning</SelectItem>
-                  <SelectItem value="evening">Evening</SelectItem>
-                  <SelectItem value="custom">Custom</SelectItem>
+                <SelectTrigger className="bg-gray-800/50 border-gray-700 text-white h-11"><SelectValue /></SelectTrigger>
+                <SelectContent className="bg-gray-800 border-gray-700">
+                  <SelectItem value="full_day" className="text-white">Full Day</SelectItem>
+                  <SelectItem value="morning" className="text-white">Morning</SelectItem>
+                  <SelectItem value="evening" className="text-white">Evening</SelectItem>
+                  <SelectItem value="custom" className="text-white">Custom</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             {formData.shiftType === "custom" && (
               <div className="grid grid-cols-2 gap-4">
-                <div><Label>Start Time</Label><Input type="time" value={formData.startTime} onChange={(e) => setFormData({ ...formData, startTime: e.target.value })} /></div>
-                <div><Label>End Time</Label><Input type="time" value={formData.endTime} onChange={(e) => setFormData({ ...formData, endTime: e.target.value })} /></div>
+                <div><Label className="text-gray-300">Start Time</Label><Input type="time" value={formData.startTime} onChange={(e) => setFormData({ ...formData, startTime: e.target.value })} className="bg-gray-800/50 border-gray-700 text-white h-11" /></div>
+                <div><Label className="text-gray-300">End Time</Label><Input type="time" value={formData.endTime} onChange={(e) => setFormData({ ...formData, endTime: e.target.value })} className="bg-gray-800/50 border-gray-700 text-white h-11" /></div>
               </div>
             )}
             <div className="grid grid-cols-2 gap-4">
-              <div><Label>Monthly Fee (₹) *</Label><Input type="number" value={formData.monthlyFee} onChange={(e) => setFormData({ ...formData, monthlyFee: e.target.value })} /></div>
-              <div><Label>Admission Fee (₹)</Label><Input type="number" value={formData.admissionFee} onChange={(e) => setFormData({ ...formData, admissionFee: e.target.value })} /></div>
-              <div><Label>Security Deposit (₹)</Label><Input type="number" value={formData.securityDeposit} onChange={(e) => setFormData({ ...formData, securityDeposit: e.target.value })} /></div>
-              <div><Label>Duration *</Label><Input type="number" value={formData.duration} onChange={(e) => setFormData({ ...formData, duration: e.target.value })} /></div>
+              <div><Label className="text-gray-300">Monthly Fee (₹) *</Label><Input type="number" value={formData.monthlyFee} onChange={(e) => setFormData({ ...formData, monthlyFee: e.target.value })} className="bg-gray-800/50 border-gray-700 text-white h-11" /></div>
+              <div><Label className="text-gray-300">Security Deposit (₹)</Label><Input type="number" value={formData.securityDeposit} onChange={(e) => setFormData({ ...formData, securityDeposit: e.target.value })} className="bg-gray-800/50 border-gray-700 text-white h-11" /></div>
+              <div><Label className="text-gray-300">Duration *</Label><Input type="number" value={formData.duration} onChange={(e) => setFormData({ ...formData, duration: e.target.value })} className="bg-gray-800/50 border-gray-700 text-white h-11" /></div>
               <div>
-                <Label>Duration Unit</Label>
+                <Label className="text-gray-300">Duration Unit</Label>
                 <Select value={formData.durationUnit} onValueChange={(v) => setFormData({ ...formData, durationUnit: v })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="days">Days</SelectItem>
-                    <SelectItem value="weeks">Weeks</SelectItem>
-                    <SelectItem value="months">Months</SelectItem>
+                  <SelectTrigger className="bg-gray-800/50 border-gray-700 text-white h-11"><SelectValue /></SelectTrigger>
+                  <SelectContent className="bg-gray-800 border-gray-700">
+                    <SelectItem value="days" className="text-white">Days</SelectItem>
+                    <SelectItem value="weeks" className="text-white">Weeks</SelectItem>
+                    <SelectItem value="months" className="text-white">Months</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
-              <div><Label>Late Fee (₹)</Label><Input type="number" value={formData.lateFee} onChange={(e) => setFormData({ ...formData, lateFee: e.target.value })} /></div>
             </div>
-            <div><Label>Facilities (comma separated)</Label><Input placeholder="WiFi, AC, Power backup" value={formData.facilities} onChange={(e) => setFormData({ ...formData, facilities: e.target.value })} /></div>
-            <Button onClick={handleSave} disabled={saving} className="w-full">
+            <div><Label className="text-gray-300">Facilities (comma separated)</Label><Input placeholder="WiFi, AC, Power backup" value={formData.facilities} onChange={(e) => setFormData({ ...formData, facilities: e.target.value })} className="bg-gray-800/50 border-gray-700 text-white h-11" /></div>
+            <Button onClick={handleSave} disabled={saving || !formData.name || !formData.monthlyFee} className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white h-12">
               {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null} {editingId ? "Save Changes" : "Create Plan"}
             </Button>
           </div>

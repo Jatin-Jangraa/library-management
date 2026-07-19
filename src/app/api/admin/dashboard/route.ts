@@ -1,7 +1,6 @@
 import { NextRequest } from "next/server";
 import { connectDB } from "@/lib/db";
 import { requireOwner, success, error } from "@/lib/api-utils";
-import StudentProfile from "@/models/StudentProfile";
 import Membership from "@/models/Membership";
 import Seat from "@/models/Seat";
 import SeatAssignment from "@/models/SeatAssignment";
@@ -66,18 +65,6 @@ export async function GET(req: NextRequest) {
         $group: {
           _id: { month: { $month: "$paymentDate" }, year: { $year: "$paymentDate" } },
           total: { $sum: "$finalAmount" },
-        },
-      },
-      { $sort: { "_id.year": -1, "_id.month": -1 } },
-      { $limit: 6 },
-    ]);
-
-    const admissionsChart = await User.aggregate([
-      { $match: { role: "student" } },
-      {
-        $group: {
-          _id: { month: { $month: "$createdAt" }, year: { $year: "$createdAt" } },
-          count: { $sum: 1 },
         },
       },
       { $sort: { "_id.year": -1, "_id.month": -1 } },

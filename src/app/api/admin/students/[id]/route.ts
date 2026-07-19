@@ -22,7 +22,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 
     const profile = await StudentProfile.findOne({ userId: params.id }).lean();
     const memberships = await Membership.find({ studentId: params.id })
-      .populate("planId", "name shiftType monthlyFee admissionFee securityDeposit")
+      .populate("planId", "name shiftType monthlyFee securityDeposit")
       .populate("seatId", "seatNumber")
       .sort({ createdAt: -1 })
       .lean();

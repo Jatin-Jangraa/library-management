@@ -40,12 +40,9 @@ export const planSchema = z.object({
   startTime: z.string().optional(),
   endTime: z.string().optional(),
   monthlyFee: z.number().min(0, "Fee must be positive"),
-  admissionFee: z.number().min(0).optional(),
   securityDeposit: z.number().min(0).optional(),
   duration: z.number().min(1, "Duration is required"),
   durationUnit: z.enum(["days", "weeks", "months"]),
-  gracePeriod: z.number().min(0).optional(),
-  lateFee: z.number().min(0).optional(),
   isActive: z.boolean().default(true),
 });
 
@@ -60,17 +57,16 @@ export const paymentSchema = z.object({
   studentId: z.string().min(1, "Student is required"),
   amount: z.number().min(1, "Amount must be positive"),
   method: z.enum(["online", "cash", "bank_transfer", "upi", "cheque", "other"]),
-  purpose: z.enum(["admission", "monthly_fee", "renewal", "security_deposit", "late_fee", "other"]),
+  purpose: z.enum(["monthly_fee", "renewal", "security_deposit", "other"]),
   planId: z.string().optional(),
   notes: z.string().optional(),
-  discount: z.number().min(0).optional(),
 });
 
 export const offlinePaymentSchema = z.object({
   studentId: z.string().min(1),
   amount: z.number().min(1),
   method: z.enum(["cash", "bank_transfer", "upi", "cheque", "other"]),
-  purpose: z.enum(["admission", "monthly_fee", "renewal", "security_deposit", "late_fee", "other"]),
+  purpose: z.enum(["monthly_fee", "renewal", "security_deposit", "other"]),
   planId: z.string().optional(),
   notes: z.string().optional(),
   discount: z.number().min(0).optional(),
