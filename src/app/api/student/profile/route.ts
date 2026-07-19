@@ -15,7 +15,7 @@ export async function GET() {
 
     const profile = await StudentProfile.findOne({ userId: user.id }).lean();
     const membership = await Membership.findOne({ studentId: user.id, status: "active" })
-      .populate("planId", "name shiftType startTime endTime monthlyFee")
+      .populate("planId", "name shiftType startTime endTime monthlyFee securityDeposit duration durationUnit")
       .populate("seatId", "seatNumber")
       .lean();
 
@@ -26,23 +26,41 @@ export async function GET() {
 
     const today = new Date();
     const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-    const attendanceThisMonth = await Attendance.countDocuments({
+    const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0, 23, 59, 59);
+
+    const attendanceRecords = await Attendance.find({
       studentId: user.id,
-      date: { $gte: startOfMonth },
-      status: "present",
-    });
-    const totalDaysInMonth = today.getDate();
-    const attendancePercentage = totalDaysInMonth > 0 ? Math.round((attendanceThisMonth / totalDaysInMonth) * 100) : 0;
+      date: { $gte: startOfMonth, $lte: endOfMonth },
+    }).lean();
+
+    const totalPresent = attendanceRecords.filter((r) => r.status === "present").length;
+    const totalLate = attendanceRecords.filter((r) => r.status === "late").length;
+    const totalAbsent = attendanceRecords.filter((r) => r.status === "absent").length;
+    const totalLeave = attendanceRecords.filter((r) => r.status === "leave").length;
+    const totalMarked = attendanceRecords.length;
+
+    const todayDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const todayRecord = attendanceRecords.find((r) => {
+      const rd = new Date(r.date);
+      rd.setHours(0, 0, 0, 0);
+      return rd.getTime() === todayDate.getTime();
+    }) || null;
 
     return success({
       user,
       profile,
       membership,
       recentPayments,
-      attendanceStats: {
-        presentDays: attendanceThisMonth,
-        totalDays: totalDaysInMonth,
-        percentage: attendancePercentage,
+      attendance: {
+        records: attendanceRecords,
+        todayRecord,
+        stats: {
+          present: totalPresent,
+          late: totalLate,
+          absent: totalAbsent,
+          leave: totalLeave,
+          total: totalMarked,
+        },
       },
     });
   } catch (err: any) {
