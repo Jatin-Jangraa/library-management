@@ -192,7 +192,7 @@ export default function StudentDashboard() {
                   <p className="font-semibold text-white">{membership.seatId?.seatNumber || "Not assigned"}</p>
                 </div>
               </div>
-              <div className="space-y-3">
+              {/* <div className="space-y-3">
                 <div>
                   <p className="text-xs text-gray-500">Total Paid</p>
                   <p className="font-semibold text-emerald-400">{formatCurrency(membership.amountPaid)}</p>
@@ -203,7 +203,7 @@ export default function StudentDashboard() {
                     <p className="font-semibold text-white">{formatCurrency(membership.planId.securityDeposit)}</p>
                   </div>
                 )}
-              </div>
+              </div> */}
             </div>
             {daysLeft <= 7 && daysLeft > 0 && (
               <div className="mt-4 p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl text-sm text-amber-400">

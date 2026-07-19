@@ -102,7 +102,7 @@ export default function StudentSeatPage() {
                   <CalendarDays className="h-5 w-5 text-emerald-400" /> Membership Period
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
+              {/* <CardContent className="space-y-4">
                 <div className="flex justify-between">
                   <span className="text-gray-400">Start Date</span>
                   <span className="text-white font-medium">{formatDate(membership.startDate)}</span>
@@ -119,7 +119,7 @@ export default function StudentSeatPage() {
                   <span className="text-gray-400">Total Paid</span>
                   <span className="text-emerald-400 font-medium">{formatCurrency(membership.amountPaid)}</span>
                 </div>
-              </CardContent>
+              </CardContent> */}
             </Card>
           </div>
 

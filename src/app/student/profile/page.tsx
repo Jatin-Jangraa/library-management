@@ -29,9 +29,9 @@ export default function StudentProfilePage() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle>Personal Information</CardTitle>
-            <Badge variant={user?.isActive ? "success" : "destructive"}>
+            {/* <Badge variant={user?.isActive ? "success" : "destructive"}>
               {user?.isActive ? "Active" : "Inactive"}
-            </Badge>
+            </Badge> */}
           </div>
         </CardHeader>
         <CardContent>
