@@ -4,7 +4,7 @@ import { requireAuth, success, error } from "@/lib/api-utils";
 import SupportTicket from "@/models/SupportTicket";
 import { generateTicketNumber } from "@/lib/utils";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
     const user = await requireAuth();
     if (!user) return error("Unauthorized", 401);
