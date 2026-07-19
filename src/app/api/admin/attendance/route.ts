@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { connectDB } from "@/lib/db";
-import { requireOwner, success, error } from "@/lib/api-utils";
+import { requireOwner, success, error, badRequest } from "@/lib/api-utils";
+import User from "@/models/User";
 import Attendance from "@/models/Attendance";
 
 export async function GET(req: NextRequest) {
@@ -35,6 +36,8 @@ export async function POST(req: NextRequest) {
 
     await connectDB();
     const body = await req.json();
+
+    if (!body.date) return badRequest("Date is required");
 
     if (body.records) {
       const bulkOps = body.records.map((record: any) => ({

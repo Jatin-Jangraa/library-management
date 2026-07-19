@@ -24,7 +24,6 @@ export default function SettingsPage() {
     setSaving(true);
     const payload = {
       ...settings,
-      lateFeeAmount: Number(settings.lateFeeAmount) || 0,
       membershipExpiryGraceDays: Number(settings.membershipExpiryGraceDays) || 0,
     };
     await fetch("/api/admin/settings", {
@@ -83,13 +82,6 @@ export default function SettingsPage() {
             <input type="checkbox" checked={settings.seatSharingEnabled || false} onChange={(e) => setSettings({ ...settings, seatSharingEnabled: e.target.checked })} className="rounded" />
             <span className="text-sm">Enable seat sharing between shifts</span>
           </label>
-          <label className="flex items-center gap-3">
-            <input type="checkbox" checked={settings.lateFeeEnabled || false} onChange={(e) => setSettings({ ...settings, lateFeeEnabled: e.target.checked })} className="rounded" />
-            <span className="text-sm">Enable late fee</span>
-          </label>
-          {settings.lateFeeEnabled && (
-            <div className="max-w-xs"><Label>Late Fee Amount (₹)</Label><Input type="number" value={settings.lateFeeAmount || ""} onChange={(e) => setSettings({ ...settings, lateFeeAmount: e.target.value })} /></div>
-          )}
           <div className="max-w-xs"><Label>Expiry Grace Days</Label><Input type="number" value={settings.membershipExpiryGraceDays || ""} onChange={(e) => setSettings({ ...settings, membershipExpiryGraceDays: e.target.value })} /></div>
         </CardContent>
       </Card>

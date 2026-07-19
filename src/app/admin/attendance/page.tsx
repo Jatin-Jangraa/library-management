@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2, Save } from "lucide-react";
@@ -46,16 +45,6 @@ export default function AttendancePage() {
     });
     setSaving(false);
     alert("Attendance saved!");
-  };
-
-  const statusVariant = (s: string) => {
-    switch (s) {
-      case "present": return "success";
-      case "absent": return "destructive";
-      case "late": return "warning";
-      case "leave": return "secondary";
-      default: return "outline";
-    }
   };
 
   return (

@@ -1,10 +1,10 @@
 import { NextRequest } from "next/server";
 import { connectDB } from "@/lib/db";
 import { requireOwner, success, error, badRequest } from "@/lib/api-utils";
+import User from "@/models/User";
 import Seat from "@/models/Seat";
 import SeatAssignment from "@/models/SeatAssignment";
 import Membership from "@/models/Membership";
-import MembershipPlan from "@/models/MembershipPlan";
 
 export async function POST(req: NextRequest) {
   try {

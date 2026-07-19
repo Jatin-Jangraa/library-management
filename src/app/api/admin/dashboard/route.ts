@@ -93,6 +93,7 @@ export async function GET(req: NextRequest) {
       monthlyExpenses: totalExpenses,
       netIncome,
       recentPayments,
+      monthlyCollectionChart,
     });
   } catch (err: any) {
     return error(err.message || "Failed to load dashboard");

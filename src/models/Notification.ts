@@ -3,8 +3,8 @@ import mongoose, { Schema, Document } from "mongoose";
 export interface INotification extends Document {
   title: string;
   message: string;
-  type: "fee_reminder" | "payment_confirmation" | "admission_confirmation" | "membership_expiry" | "holiday_notice" | "timing_change" | "event_announcement" | "maintenance_notice" | "emergency_notice" | "general";
-  targetAudience: "all" | "morning" | "evening" | "full_day" | "specific" | "pending_fees" | "expired";
+  type: "fee_reminder" | "payment_confirmation" | "membership_expiry" | "holiday_notice" | "timing_change" | "event_announcement" | "maintenance_notice" | "emergency_notice" | "general";
+  targetAudience: "all" | "morning" | "evening" | "full_day" | "specific" | "expired";
   specificStudentIds: mongoose.Types.ObjectId[];
   sentBy: mongoose.Types.ObjectId;
   sendEmail: boolean;
@@ -23,8 +23,8 @@ const NotificationSchema = new Schema<INotification>(
   {
     title: { type: String, required: true },
     message: { type: String, required: true },
-    type: { type: String, enum: ["fee_reminder", "payment_confirmation", "admission_confirmation", "membership_expiry", "holiday_notice", "timing_change", "event_announcement", "maintenance_notice", "emergency_notice", "general"], required: true },
-    targetAudience: { type: String, enum: ["all", "morning", "evening", "full_day", "specific", "pending_fees", "expired"], required: true },
+    type: { type: String, enum: ["fee_reminder", "payment_confirmation", "membership_expiry", "holiday_notice", "timing_change", "event_announcement", "maintenance_notice", "emergency_notice", "general"], required: true },
+    targetAudience: { type: String, enum: ["all", "morning", "evening", "full_day", "specific", "expired"], required: true },
     specificStudentIds: [{ type: Schema.Types.ObjectId, ref: "User" }],
     sentBy: { type: Schema.Types.ObjectId, ref: "User", required: true },
     sendEmail: { type: Boolean, default: false },

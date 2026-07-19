@@ -69,7 +69,6 @@ export const offlinePaymentSchema = z.object({
   purpose: z.enum(["monthly_fee", "renewal", "security_deposit", "other"]),
   planId: z.string().optional(),
   notes: z.string().optional(),
-  discount: z.number().min(0).optional(),
   paymentDate: z.string().optional(),
 });
 
@@ -114,8 +113,8 @@ export const eventSchema = z.object({
 export const notificationSchema = z.object({
   title: z.string().min(2),
   message: z.string().min(10),
-  type: z.enum(["fee_reminder", "payment_confirmation", "admission_confirmation", "membership_expiry", "holiday_notice", "timing_change", "event_announcement", "maintenance_notice", "emergency_notice", "general"]),
-  targetAudience: z.enum(["all", "morning", "evening", "full_day", "specific", "pending_fees", "expired"]),
+  type: z.enum(["fee_reminder", "payment_confirmation", "membership_expiry", "holiday_notice", "timing_change", "event_announcement", "maintenance_notice", "emergency_notice", "general"]),
+  targetAudience: z.enum(["all", "morning", "evening", "full_day", "specific", "expired"]),
   specificStudentIds: z.array(z.string()).optional(),
   sendEmail: z.boolean().default(false),
 });
@@ -186,7 +185,5 @@ export const settingsSchema = z.object({
     youtube: z.string().optional(),
   }).optional(),
   seatSharingEnabled: z.boolean().optional(),
-  lateFeeEnabled: z.boolean().optional(),
-  lateFeeAmount: z.number().optional(),
   membershipExpiryGraceDays: z.number().optional(),
 });

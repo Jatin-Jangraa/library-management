@@ -5,10 +5,9 @@ export interface IPayment extends Document {
   membershipId?: mongoose.Types.ObjectId;
   planId?: mongoose.Types.ObjectId;
   amount: number;
-  discount: number;
   finalAmount: number;
   method: "online" | "cash" | "bank_transfer" | "upi" | "cheque" | "other";
-  purpose: "admission" | "monthly_fee" | "renewal" | "security_deposit" | "late_fee" | "other";
+  purpose: "monthly_fee" | "renewal" | "security_deposit" | "other";
   status: "pending" | "completed" | "failed" | "refunded";
   razorpayOrderId?: string;
   razorpayPaymentId?: string;
@@ -28,10 +27,9 @@ const PaymentSchema = new Schema<IPayment>(
     membershipId: { type: Schema.Types.ObjectId, ref: "Membership" },
     planId: { type: Schema.Types.ObjectId, ref: "MembershipPlan" },
     amount: { type: Number, required: true, min: 0 },
-    discount: { type: Number, default: 0, min: 0 },
     finalAmount: { type: Number, required: true, min: 0 },
     method: { type: String, enum: ["online", "cash", "bank_transfer", "upi", "cheque", "other"], required: true },
-    purpose: { type: String, enum: ["admission", "monthly_fee", "renewal", "security_deposit", "late_fee", "other"], required: true },
+    purpose: { type: String, enum: ["monthly_fee", "renewal", "security_deposit", "other"], required: true },
     status: { type: String, enum: ["pending", "completed", "failed", "refunded"], default: "pending" },
     razorpayOrderId: String,
     razorpayPaymentId: String,

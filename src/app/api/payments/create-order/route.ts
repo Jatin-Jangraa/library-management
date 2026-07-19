@@ -2,7 +2,6 @@ import { NextRequest } from "next/server";
 import { connectDB } from "@/lib/db";
 import { requireAuth, success, error, badRequest } from "@/lib/api-utils";
 import MembershipPlan from "@/models/MembershipPlan";
-import Membership from "@/models/Membership";
 import { config } from "@/lib/config";
 
 export async function POST(req: NextRequest) {

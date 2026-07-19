@@ -40,7 +40,6 @@ export async function POST(req: NextRequest) {
       studentId: user.id,
       planId: planId,
       amount: amount,
-      discount: 0,
       finalAmount: amount,
       method: "online",
       purpose: "monthly_fee",
@@ -67,7 +66,6 @@ export async function POST(req: NextRequest) {
       status: "active",
       totalAmount: amount,
       amountPaid: amount,
-      pendingAmount: 0,
       securityDepositPaid: plan.securityDeposit > 0,
     });
 

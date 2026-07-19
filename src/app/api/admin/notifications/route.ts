@@ -39,9 +39,6 @@ export async function POST(req: NextRequest) {
     } else if (body.targetAudience === "morning" || body.targetAudience === "evening" || body.targetAudience === "full_day") {
       const memberships = await Membership.find({ status: "active", shiftType: body.targetAudience }).select("studentId");
       targetStudentIds = memberships.map((m) => m.studentId.toString());
-    } else if (body.targetAudience === "pending_fees") {
-      const memberships = await Membership.find({ pendingAmount: { $gt: 0 } }).select("studentId");
-      targetStudentIds = memberships.map((m) => m.studentId.toString());
     } else if (body.targetAudience === "expired") {
       const memberships = await Membership.find({ status: "expired" }).select("studentId");
       targetStudentIds = memberships.map((m) => m.studentId.toString());

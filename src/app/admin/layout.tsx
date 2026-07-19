@@ -5,8 +5,8 @@ import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import {
-  LayoutDashboard, Users, Armchair, Calendar, CreditCard, Receipt,
-  Bell, CalendarDays, UserCog, FileText, MessageSquare, Settings,
+  LayoutDashboard, Users, Armchair, Calendar, CreditCard,
+  Bell, CalendarDays, UserCog, MessageSquare, Settings,
   BookOpen, LogOut, Menu, X, DollarSign, BarChart3
 } from "lucide-react";
 

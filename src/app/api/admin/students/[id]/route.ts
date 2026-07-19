@@ -115,7 +115,6 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     ]);
 
     if (seatIds.length > 0) {
-      const Seat = (await import("@/models/Seat")).default;
       await Seat.updateMany({ _id: { $in: seatIds } }, { status: "available" });
     }
 

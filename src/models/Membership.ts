@@ -10,9 +10,7 @@ export interface IMembership extends Document {
   status: "active" | "expired" | "paused" | "cancelled";
   totalAmount: number;
   amountPaid: number;
-  pendingAmount: number;
   securityDepositPaid: boolean;
-  admissionFeePaid: boolean;
   assignedBy?: mongoose.Types.ObjectId;
   notes?: string;
   createdAt: Date;
@@ -30,9 +28,7 @@ const MembershipSchema = new Schema<IMembership>(
     status: { type: String, enum: ["active", "expired", "paused", "cancelled"], default: "active" },
     totalAmount: { type: Number, default: 0 },
     amountPaid: { type: Number, default: 0 },
-    pendingAmount: { type: Number, default: 0 },
     securityDepositPaid: { type: Boolean, default: false },
-    admissionFeePaid: { type: Boolean, default: false },
     assignedBy: { type: Schema.Types.ObjectId, ref: "User" },
     notes: String,
   },

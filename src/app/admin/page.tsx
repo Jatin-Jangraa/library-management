@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Users, Armchair, CreditCard, CalendarDays, Key, Eye, EyeOff, Copy, CheckCircle, Loader2 } from "lucide-react";
+import { Users, Armchair, CalendarDays, Key, Eye, EyeOff, Copy, CheckCircle, Loader2 } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import { config } from "@/lib/config";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";

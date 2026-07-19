@@ -1,5 +1,4 @@
-import Link from "next/link";
-import { CalendarDays, BookOpen } from "lucide-react";
+import { CalendarDays } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import { config } from "@/lib/config";
 import PublicNavbar from "@/components/PublicNavbar";

@@ -7,12 +7,9 @@ export interface IMembershipPlan extends Document {
   startTime?: string;
   endTime?: string;
   monthlyFee: number;
-  admissionFee: number;
   securityDeposit: number;
   duration: number;
   durationUnit: "days" | "weeks" | "months";
-  gracePeriod: number;
-  lateFee: number;
   facilities: string[];
   isActive: boolean;
   createdAt: Date;
@@ -27,12 +24,9 @@ const MembershipPlanSchema = new Schema<IMembershipPlan>(
     startTime: String,
     endTime: String,
     monthlyFee: { type: Number, required: true, min: 0 },
-    admissionFee: { type: Number, default: 0, min: 0 },
     securityDeposit: { type: Number, default: 0, min: 0 },
     duration: { type: Number, required: true, min: 1 },
     durationUnit: { type: String, enum: ["days", "weeks", "months"], default: "months" },
-    gracePeriod: { type: Number, default: 0 },
-    lateFee: { type: Number, default: 0 },
     facilities: [String],
     isActive: { type: Boolean, default: true },
   },

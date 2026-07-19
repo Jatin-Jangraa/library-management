@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BookOpen, CheckCircle } from "lucide-react";
+import { CheckCircle } from "lucide-react";
 import { config } from "@/lib/config";
 import PublicNavbar from "@/components/PublicNavbar";
 

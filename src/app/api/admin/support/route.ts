@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { connectDB } from "@/lib/db";
 import { requireOwner, success, error } from "@/lib/api-utils";
 import SupportTicket from "@/models/SupportTicket";
+import User from "@/models/User";
 
 export async function GET(req: NextRequest) {
   try {

@@ -1,5 +1,4 @@
-import Link from "next/link";
-import { BookOpen, Shield, Clock, Users, CheckCircle } from "lucide-react";
+import { Shield, Users } from "lucide-react";
 import { config } from "@/lib/config";
 import PublicNavbar from "@/components/PublicNavbar";
 

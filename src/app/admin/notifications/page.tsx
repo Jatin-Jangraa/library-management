@@ -107,7 +107,6 @@ export default function NotificationsPage() {
                     <SelectItem value="morning">Morning Shift</SelectItem>
                     <SelectItem value="evening">Evening Shift</SelectItem>
                     <SelectItem value="full_day">Full Day</SelectItem>
-                    <SelectItem value="pending_fees">Pending Fees</SelectItem>
                     <SelectItem value="expired">Expired</SelectItem>
                   </SelectContent>
                 </Select>

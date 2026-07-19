@@ -28,8 +28,6 @@ export interface ILibrarySettings extends Document {
     youtube?: string;
   };
   seatSharingEnabled: boolean;
-  lateFeeEnabled: boolean;
-  lateFeeAmount: number;
   membershipExpiryGraceDays: number;
   createdAt: Date;
   updatedAt: Date;
@@ -64,8 +62,6 @@ const LibrarySettingsSchema = new Schema<ILibrarySettings>(
       youtube: String,
     },
     seatSharingEnabled: { type: Boolean, default: false },
-    lateFeeEnabled: { type: Boolean, default: false },
-    lateFeeAmount: { type: Number, default: 0 },
     membershipExpiryGraceDays: { type: Number, default: 7 },
   },
   { timestamps: true }

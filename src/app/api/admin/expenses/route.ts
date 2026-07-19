@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { connectDB } from "@/lib/db";
 import { requireOwner, success, error } from "@/lib/api-utils";
+import User from "@/models/User";
 import Expense from "@/models/Expense";
 
 export async function GET(req: NextRequest) {
