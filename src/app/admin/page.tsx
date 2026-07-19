@@ -4,9 +4,8 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Users, Armchair, CreditCard, CalendarDays, TrendingUp, AlertCircle, Key, Eye, EyeOff, Copy, CheckCircle, Loader2 } from "lucide-react";
+import { Users, Armchair, CreditCard, CalendarDays, Key, Eye, EyeOff, Copy, CheckCircle, Loader2 } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import { config } from "@/lib/config";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
@@ -14,8 +13,6 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 interface DashboardData {
   totalStudents: number;
   activeStudents: number;
-  expiredStudents: number;
-  pendingFeesStudents: number;
   totalSeats: number;
   occupiedSeats: number;
   availableSeats: number;
@@ -24,7 +21,6 @@ interface DashboardData {
   fullDayOccupancy: number;
   todayAttendance: number;
   monthlyFeeCollection: number;
-  pendingFeeAmount: number;
   onlinePaymentCollection: number;
   offlinePaymentCollection: number;
   monthlyExpenses: number;
@@ -83,7 +79,7 @@ export default function AdminDashboard() {
       <div className="space-y-6">
         <h1 className="text-2xl font-bold text-white">Dashboard</h1>
         <div className="grid md:grid-cols-4 gap-4">
-          {Array.from({ length: 8 }).map((_, i) => (
+          {Array.from({ length: 6 }).map((_, i) => (
             <Card key={i} className="animate-pulse border-gray-800 bg-gray-900/50">
               <CardContent className="p-6">
                 <div className="h-4 bg-gray-800 rounded w-20 mb-2" />
@@ -105,8 +101,6 @@ export default function AdminDashboard() {
     { title: "Occupied Seats", value: data.occupiedSeats, icon: Armchair, color: "text-orange-400" },
     { title: "Available Seats", value: data.availableSeats, icon: Armchair, color: "text-emerald-400" },
     { title: "Today Attendance", value: data.todayAttendance, icon: CalendarDays, color: "text-blue-400" },
-    { title: "Monthly Collection", value: data.monthlyFeeCollection, icon: CreditCard, color: "text-emerald-400", isCurrency: true },
-    { title: "Pending Fees", value: data.pendingFeeAmount, icon: AlertCircle, color: "text-red-400", isCurrency: true },
   ];
 
   const shiftData = [
@@ -117,29 +111,48 @@ export default function AdminDashboard() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-white">Dashboard Overview</h1>
+      <h1 className="text-2xl font-bold text-white">Dashboard</h1>
 
-      <div className="grid md:grid-cols-4 gap-4">
+      <div className="grid md:grid-cols-3 lg:grid-cols-6 gap-4">
         {stats.map((stat) => {
           const Icon = stat.icon;
           return (
-            <Card key={stat.title} className="border-gray-800 bg-gray-900/50 hover:border-gray-700 transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/5 animate-fade-in">
-              <CardContent className="p-6">
+            <Card key={stat.title} className="border-gray-800 bg-gray-900/50 hover:border-gray-700 transition-all duration-300">
+              <CardContent className="p-5">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-400">{stat.title}</p>
-                    <p className={`text-2xl font-bold ${stat.color}`}>
-                      {stat.isCurrency ? formatCurrency(stat.value) : stat.value}
-                    </p>
+                    <p className="text-xs text-gray-400">{stat.title}</p>
+                    <p className={`text-2xl font-bold ${stat.color}`}>{stat.value}</p>
                   </div>
                   <div className="p-2 rounded-xl bg-gray-800/50">
-                    <Icon className={`h-6 w-6 ${stat.color}`} />
+                    <Icon className={`h-5 w-5 ${stat.color}`} />
                   </div>
                 </div>
               </CardContent>
             </Card>
           );
         })}
+      </div>
+
+      <div className="grid md:grid-cols-3 gap-4">
+        <Card className="border-gray-800 bg-gray-900/50">
+          <CardContent className="p-5">
+            <p className="text-xs text-gray-400 mb-1">Monthly Collection</p>
+            <p className="text-2xl font-bold text-emerald-400">{formatCurrency(data.monthlyFeeCollection)}</p>
+          </CardContent>
+        </Card>
+        <Card className="border-gray-800 bg-gray-900/50">
+          <CardContent className="p-5">
+            <p className="text-xs text-gray-400 mb-1">Monthly Expenses</p>
+            <p className="text-2xl font-bold text-red-400">{formatCurrency(data.monthlyExpenses)}</p>
+          </CardContent>
+        </Card>
+        <Card className="border-gray-800 bg-gray-900/50">
+          <CardContent className="p-5">
+            <p className="text-xs text-gray-400 mb-1">Net Income</p>
+            <p className="text-2xl font-bold text-blue-400">{formatCurrency(data.netIncome)}</p>
+          </CardContent>
+        </Card>
       </div>
 
       <div className="grid md:grid-cols-2 gap-6">
@@ -192,7 +205,9 @@ export default function AdminDashboard() {
             </div>
           </CardContent>
         </Card>
+      </div>
 
+      <div className="grid md:grid-cols-2 gap-6">
         <Card className="border-gray-800 bg-gray-900/50">
           <CardHeader>
             <CardTitle className="text-lg text-white">Payment Breakdown</CardTitle>
@@ -238,44 +253,25 @@ export default function AdminDashboard() {
         </Card>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card className="text-center p-4 border-gray-800 bg-gray-900/50">
-          <p className="text-sm text-gray-400">Expired Memberships</p>
-          <p className="text-xl font-bold text-red-400">{data.expiredStudents}</p>
-        </Card>
-        <Card className="text-center p-4 border-gray-800 bg-gray-900/50">
-          <p className="text-sm text-gray-400">Pending Fee Students</p>
-          <p className="text-xl font-bold text-orange-400">{data.pendingFeesStudents}</p>
-        </Card>
-        <Card className="text-center p-4 border-gray-800 bg-gray-900/50">
-          <p className="text-sm text-gray-400">Morning Occupancy</p>
-          <p className="text-xl font-bold text-blue-400">{data.morningShiftOccupancy}</p>
-        </Card>
-        <Card className="text-center p-4 border-gray-800 bg-gray-900/50">
-          <p className="text-sm text-gray-400">Evening Occupancy</p>
-          <p className="text-xl font-bold text-purple-400">{data.eveningShiftOccupancy}</p>
-        </Card>
-      </div>
-
       {/* Student Credentials Section */}
       <Card className="border-gray-800 bg-gray-900/50">
-        <CardHeader>
+        <CardContent className="p-5">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-lg text-white flex items-center gap-2">
-              <Key className="h-5 w-5 text-amber-400" /> Student Login Credentials
-            </CardTitle>
+            <div>
+              <h3 className="text-sm font-medium text-white flex items-center gap-2">
+                <Key className="h-4 w-4 text-amber-400" /> Student Login Credentials
+              </h3>
+              <p className="text-xs text-gray-500 mt-1">View student login emails and passwords</p>
+            </div>
             <Button
               onClick={() => { setShowCredentials(true); setSecurityKey(""); setCredentials([]); setCredError(""); setShowPasswords(false); }}
               variant="outline"
               size="sm"
               className="border-gray-700 text-gray-300 hover:text-white"
             >
-              <Eye className="h-4 w-4 mr-2" /> View Credentials
+              <Eye className="h-4 w-4 mr-2" /> View
             </Button>
           </div>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-gray-500">Click &quot;View Credentials&quot; and enter your security key to see student login emails and passwords.</p>
         </CardContent>
       </Card>
 

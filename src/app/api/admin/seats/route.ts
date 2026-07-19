@@ -3,7 +3,6 @@ import { connectDB } from "@/lib/db";
 import { requireOwner, success, error, badRequest } from "@/lib/api-utils";
 import Seat from "@/models/Seat";
 import SeatAssignment from "@/models/SeatAssignment";
-import Membership from "@/models/Membership";
 
 export async function GET(req: NextRequest) {
   try {
@@ -37,29 +36,7 @@ export async function GET(req: NextRequest) {
       return { ...seat, currentAssignment: assignment || null };
     });
 
-    const studentUserIds = assignments
-      .map((a: any) => a.studentId?._id?.toString())
-      .filter(Boolean);
-
-    const memberships = await Membership.find({
-      studentId: { $in: studentUserIds },
-      status: "active",
-    }).lean();
-
-    const pendingMap = new Map<string, number>();
-    memberships.forEach((m: any) => {
-      pendingMap.set(m.studentId.toString(), m.pendingAmount || 0);
-    });
-
-    const seatsWithPending = seatsWithAssignment.map((seat: any) => {
-      if (seat.currentAssignment?.studentId?._id) {
-        const pending = pendingMap.get(seat.currentAssignment.studentId._id.toString()) || 0;
-        return { ...seat, pendingAmount: pending };
-      }
-      return seat;
-    });
-
-    return success({ seats: seatsWithPending });
+    return success({ seats: seatsWithAssignment });
   } catch (err: any) {
     return error(err.message || "Failed to fetch seats");
   }

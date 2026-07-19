@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Armchair } from "lucide-react";
+import { Loader2, Armchair, Clock } from "lucide-react";
+import { formatDate } from "@/lib/utils";
 
 export default function StudentSeatPage() {
   const [profile, setProfile] = useState<any>(null);
@@ -12,46 +13,74 @@ export default function StudentSeatPage() {
   useEffect(() => {
     fetch("/api/student/profile")
       .then((r) => r.json())
-      .then((d) => { setProfile(d.data); setLoading(false); });
+      .then((d) => { setProfile(d.data); setLoading(false); })
+      .catch(() => setLoading(false));
   }, []);
 
-  if (loading) return <div className="flex justify-center py-20"><Loader2 className="h-8 w-8 animate-spin" /></div>;
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+      </div>
+    );
+  }
   if (!profile) return <p className="text-center py-20 text-gray-500">Failed to load</p>;
 
   const { membership } = profile;
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">My Seat</h1>
+      <h1 className="text-2xl font-bold text-white">My Seat</h1>
 
       {membership?.seatId ? (
-        <Card>
+        <Card className="border-gray-800 bg-gray-900/50">
           <CardContent className="p-8 text-center">
-            <Armchair className="h-16 w-16 mx-auto text-primary mb-4" />
-            <h2 className="text-3xl font-bold mb-2">Seat {membership.seatId.seatNumber}</h2>
-            <div className="flex justify-center gap-4">
-              <Badge variant="success" className="text-lg px-4 py-1">{membership.shiftType?.replace("_", " ").toUpperCase()}</Badge>
+            <Armchair className="h-16 w-16 mx-auto text-blue-500 mb-4" />
+            <h2 className="text-3xl font-bold text-white mb-3">Seat {membership.seatId.seatNumber}</h2>
+            <div className="flex justify-center gap-3">
+              <Badge variant="success" className="text-sm px-4 py-1">{membership.shiftType?.replace("_", " ").toUpperCase()}</Badge>
             </div>
           </CardContent>
         </Card>
       ) : (
-        <Card>
+        <Card className="border-gray-800 bg-gray-900/50">
           <CardContent className="py-12 text-center">
-            <Armchair className="h-12 w-12 mx-auto text-gray-300 mb-4" />
-            <p className="text-gray-500">No seat assigned yet</p>
-            <p className="text-sm text-gray-400 mt-1">Contact the admin to get a seat assigned</p>
+            <Armchair className="h-12 w-12 mx-auto text-gray-600 mb-4" />
+            <p className="text-gray-400 text-lg">No seat assigned yet</p>
+            <p className="text-sm text-gray-500 mt-1">Contact the admin to get a seat</p>
           </CardContent>
         </Card>
       )}
 
-      {membership?.planId && (
-        <Card>
-          <CardHeader><CardTitle className="text-lg">Plan Details</CardTitle></CardHeader>
-          <CardContent>
-            <div className="grid md:grid-cols-3 gap-4">
-              <div><p className="text-sm text-gray-500">Plan Name</p><p className="font-semibold">{membership.planId.name}</p></div>
-              <div><p className="text-sm text-gray-500">Shift</p><p className="font-semibold capitalize">{membership.shiftType?.replace("_", " ")}</p></div>
-              <div><p className="text-sm text-gray-500">Monthly Fee</p><p className="font-semibold">₹{membership.planId.monthlyFee}</p></div>
+      {membership && (
+        <Card className="border-gray-800 bg-gray-900/50">
+          <CardContent className="p-6">
+            <h3 className="text-sm font-medium text-gray-400 mb-4 flex items-center gap-2">
+              <Clock className="h-4 w-4" /> Membership Details
+            </h3>
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              {membership.planId && (
+                <div>
+                  <p className="text-gray-500">Plan</p>
+                  <p className="text-white font-medium">{membership.planId.name}</p>
+                </div>
+              )}
+              <div>
+                <p className="text-gray-500">Shift</p>
+                <p className="text-white font-medium capitalize">{membership.shiftType?.replace("_", " ")}</p>
+              </div>
+              {membership.startDate && (
+                <div>
+                  <p className="text-gray-500">From</p>
+                  <p className="text-white font-medium">{formatDate(membership.startDate)}</p>
+                </div>
+              )}
+              {membership.endDate && (
+                <div>
+                  <p className="text-gray-500">Until</p>
+                  <p className="text-white font-medium">{formatDate(membership.endDate)}</p>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>

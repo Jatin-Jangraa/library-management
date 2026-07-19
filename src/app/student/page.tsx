@@ -3,10 +3,8 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
 import { formatCurrency, formatDate } from "@/lib/utils";
-import { Loader2, CreditCard, Armchair, CalendarDays, ArrowRight } from "lucide-react";
+import { Loader2, CreditCard, Armchair, CalendarDays } from "lucide-react";
 
 export default function StudentDashboard() {
   const [profile, setProfile] = useState<any>(null);
@@ -19,7 +17,13 @@ export default function StudentDashboard() {
       .catch(() => setLoading(false));
   }, []);
 
-  if (loading) return <div className="flex justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-blue-500" /></div>;
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+      </div>
+    );
+  }
   if (!profile) return <p className="text-center py-20 text-gray-500">Failed to load profile</p>;
 
   const { user, membership, recentPayments, attendanceStats } = profile;
@@ -31,8 +35,8 @@ export default function StudentDashboard() {
         <p className="text-gray-400">Here&apos;s your library dashboard</p>
       </div>
 
-      <div className="grid md:grid-cols-4 gap-4">
-        <Card className="border-gray-800 bg-gray-900/50 hover:border-gray-700 transition-all duration-300 animate-fade-in">
+      <div className="grid md:grid-cols-3 gap-4">
+        <Card className="border-gray-800 bg-gray-900/50 hover:border-gray-700 transition-all duration-300">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-blue-500/10 border border-blue-500/20 rounded-xl"><Armchair className="h-5 w-5 text-blue-400" /></div>
@@ -45,7 +49,7 @@ export default function StudentDashboard() {
             </div>
           </CardContent>
         </Card>
-        <Card className="border-gray-800 bg-gray-900/50 hover:border-gray-700 transition-all duration-300 animate-fade-in" style={{ animationDelay: "0.1s" }}>
+        <Card className="border-gray-800 bg-gray-900/50 hover:border-gray-700 transition-all duration-300">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-emerald-500/10 border border-emerald-500/20 rounded-xl"><Armchair className="h-5 w-5 text-emerald-400" /></div>
@@ -56,18 +60,7 @@ export default function StudentDashboard() {
             </div>
           </CardContent>
         </Card>
-        <Card className="border-gray-800 bg-gray-900/50 hover:border-gray-700 transition-all duration-300 animate-fade-in" style={{ animationDelay: "0.2s" }}>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-purple-500/10 border border-purple-500/20 rounded-xl"><CreditCard className="h-5 w-5 text-purple-400" /></div>
-              <div>
-                <p className="text-xs text-gray-400">Pending Amount</p>
-                <p className="font-bold text-red-400">{formatCurrency(membership?.pendingAmount || 0)}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="border-gray-800 bg-gray-900/50 hover:border-gray-700 transition-all duration-300 animate-fade-in" style={{ animationDelay: "0.3s" }}>
+        <Card className="border-gray-800 bg-gray-900/50 hover:border-gray-700 transition-all duration-300">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-orange-500/10 border border-orange-500/20 rounded-xl"><CalendarDays className="h-5 w-5 text-orange-400" /></div>
@@ -96,27 +89,9 @@ export default function StudentDashboard() {
                 <div><p className="text-sm text-gray-400">Seat</p><p className="font-semibold text-white">{membership.seatId?.seatNumber || "Not assigned"}</p></div>
               </div>
               <div className="space-y-2">
-                <div><p className="text-sm text-gray-400">Total Amount</p><p className="font-semibold text-white">{formatCurrency(membership.totalAmount)}</p></div>
-                <div><p className="text-sm text-gray-400">Paid</p><p className="font-semibold text-emerald-400">{formatCurrency(membership.amountPaid)}</p></div>
-                <div><p className="text-sm text-gray-400">Pending</p><p className="font-semibold text-red-400">{formatCurrency(membership.pendingAmount)}</p></div>
+                <div><p className="text-sm text-gray-400">Total Paid</p><p className="font-semibold text-emerald-400">{formatCurrency(membership.amountPaid)}</p></div>
               </div>
             </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {membership?.pendingAmount > 0 && (
-        <Card className="border-amber-500/20 bg-amber-500/5">
-          <CardContent className="p-4 flex items-center justify-between">
-            <div>
-              <p className="font-semibold text-white">Pending Payment</p>
-              <p className="text-sm text-gray-400">You have {formatCurrency(membership.pendingAmount)} pending. Pay now to avoid late fees.</p>
-            </div>
-            <Link href="/student/payments">
-              <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg shadow-blue-500/25">
-                Pay Now <ArrowRight className="h-4 w-4 ml-2" />
-              </Button>
-            </Link>
           </CardContent>
         </Card>
       )}

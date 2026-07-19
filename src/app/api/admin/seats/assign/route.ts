@@ -4,9 +4,6 @@ import { requireOwner, success, error, badRequest } from "@/lib/api-utils";
 import Seat from "@/models/Seat";
 import SeatAssignment from "@/models/SeatAssignment";
 import Membership from "@/models/Membership";
-import Payment from "@/models/Payment";
-import User from "@/models/User";
-import StudentProfile from "@/models/StudentProfile";
 
 export async function POST(req: NextRequest) {
   try {
@@ -86,7 +83,7 @@ export async function PATCH(req: NextRequest) {
 
     await connectDB();
     const body = await req.json();
-    const { assignmentId, action, amount, method, months } = body;
+    const { assignmentId, action, months } = body;
 
     const assignment = await SeatAssignment.findById(assignmentId)
       .populate("studentId", "name email phone")
@@ -108,79 +105,7 @@ export async function PATCH(req: NextRequest) {
       return success({ newEndDate }, `Valid until ${newEndDate.toLocaleDateString()}`);
     }
 
-    if (action === "pay") {
-      if (!amount || amount <= 0) return badRequest("Invalid amount");
-
-      const extendMonths = months || 1;
-      const newEndDate = new Date(assignment.endDate);
-      newEndDate.setMonth(newEndDate.getMonth() + extendMonths);
-
-      const receiptCount = await Payment.countDocuments();
-      const receiptNumber = `RCP-${Date.now()}-${String(receiptCount + 1).padStart(4, "0")}`;
-
-      const membership = await Membership.findOne({ studentId: assignment.studentId._id, status: "active" });
-
-      const payment = await Payment.create({
-        studentId: assignment.studentId._id,
-        membershipId: membership?._id,
-        amount: Number(amount),
-        discount: 0,
-        finalAmount: Number(amount),
-        method: method || "cash",
-        purpose: "monthly_fee",
-        status: "completed",
-        receiptNumber,
-        paymentDate: new Date(),
-        receivedBy: user.id,
-      });
-
-      await SeatAssignment.findByIdAndUpdate(assignmentId, { endDate: newEndDate });
-
-      if (membership) {
-        await Membership.findByIdAndUpdate(membership._id, {
-          endDate: newEndDate,
-          amountPaid: (membership.amountPaid || 0) + Number(amount),
-          pendingAmount: Math.max(0, (membership.totalAmount || 0) - ((membership.amountPaid || 0) + Number(amount))),
-        });
-      }
-
-      return success({ payment, newEndDate }, `Payment recorded. Valid until ${newEndDate.toLocaleDateString()}`);
-    }
-
-    if (action === "clearPending") {
-      const membership = await Membership.findOne({ studentId: assignment.studentId._id, status: "active" });
-      if (!membership || (membership.pendingAmount || 0) <= 0) {
-        return badRequest("No pending amount to clear");
-      }
-
-      const pendingAmount = membership.pendingAmount;
-      const receiptCount = await Payment.countDocuments();
-      const receiptNumber = `RCP-${Date.now()}-${String(receiptCount + 1).padStart(4, "0")}`;
-
-      const payment = await Payment.create({
-        studentId: assignment.studentId._id,
-        membershipId: membership._id,
-        amount: pendingAmount,
-        discount: 0,
-        finalAmount: pendingAmount,
-        method: body.method || "cash",
-        purpose: "pending_clearance",
-        status: "completed",
-        receiptNumber,
-        paymentDate: new Date(),
-        notes: body.notes || "Pending amount cleared",
-        receivedBy: user.id,
-      });
-
-      await Membership.findByIdAndUpdate(membership._id, {
-        amountPaid: (membership.amountPaid || 0) + pendingAmount,
-        pendingAmount: 0,
-      });
-
-      return success({ payment, clearedAmount: pendingAmount }, `₹${pendingAmount} pending amount cleared`);
-    }
-
-    return badRequest("Invalid action. Use 'extend', 'pay', or 'clearPending'");
+    return badRequest("Invalid action. Use 'extend'");
   } catch (err: any) {
     return error(err.message || "Failed to process");
   }

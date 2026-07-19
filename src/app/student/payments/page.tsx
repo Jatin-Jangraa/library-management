@@ -1,150 +1,71 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Loader2, CreditCard } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { formatCurrency, formatDate } from "@/lib/utils";
-import { config } from "@/lib/config";
 
 export default function StudentPaymentsPage() {
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [paying, setPaying] = useState(false);
 
   useEffect(() => {
     fetch("/api/student/profile")
       .then((r) => r.json())
-      .then((d) => { setProfile(d.data); setLoading(false); });
+      .then((d) => { setProfile(d.data); setLoading(false); })
+      .catch(() => setLoading(false));
   }, []);
 
-  const handlePay = async () => {
-    if (!profile?.membership?.planId?._id) return;
-    setPaying(true);
-    try {
-      const res = await fetch("/api/payments/create-order", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ planId: profile.membership.planId._id }),
-      });
-      const data = await res.json();
-      if (!data.success) { alert(data.error); setPaying(false); return; }
-
-      const order = data.data;
-      const options = {
-        key: order.keyId,
-        amount: order.amount * 100,
-        currency: config.currency.code,
-        name: `${config.library.name} Payment`,
-        description: `Payment for ${order.planName}`,
-        order_id: order.orderId,
-        handler: async (response: any) => {
-          const verifyRes = await fetch("/api/payments/verify", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_signature: response.razorpay_signature,
-              planId: profile.membership.planId._id,
-            }),
-          });
-          const verifyData = await verifyRes.json();
-          if (verifyData.success) {
-            alert("Payment successful!");
-            window.location.reload();
-          } else {
-            alert("Payment verification failed. Contact support.");
-          }
-        },
-        prefill: {
-          name: profile.user?.name,
-          email: profile.user?.email,
-          contact: profile.user?.phone,
-        },
-        theme: { color: "#3b82f6" },
-      };
-
-      const rzp = new (window as any).Razorpay(options);
-      rzp.open();
-    } catch (err) {
-      alert("Payment initiation failed");
-    }
-    setPaying(false);
-  };
-
-  if (loading) return <div className="flex justify-center py-20"><Loader2 className="h-8 w-8 animate-spin" /></div>;
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+      </div>
+    );
+  }
   if (!profile) return <p className="text-center py-20 text-gray-500">Failed to load</p>;
 
-  const { membership, recentPayments } = profile;
+  const { recentPayments } = profile;
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Payments</h1>
+      <h1 className="text-2xl font-bold text-white">Payment History</h1>
 
-      {membership && (
-        <Card>
-          <CardHeader><CardTitle className="text-lg">Payment Summary</CardTitle></CardHeader>
-          <CardContent>
-            <div className="grid md:grid-cols-4 gap-4">
-              <div className="text-center p-4 bg-gray-50 rounded-lg">
-                <p className="text-sm text-gray-500">Total Amount</p>
-                <p className="text-xl font-bold">{formatCurrency(membership.totalAmount)}</p>
-              </div>
-              <div className="text-center p-4 bg-green-50 rounded-lg">
-                <p className="text-sm text-gray-500">Paid</p>
-                <p className="text-xl font-bold text-green-600">{formatCurrency(membership.amountPaid)}</p>
-              </div>
-              <div className="text-center p-4 bg-red-50 rounded-lg">
-                <p className="text-sm text-gray-500">Pending</p>
-                <p className="text-xl font-bold text-red-600">{formatCurrency(membership.pendingAmount)}</p>
-              </div>
-              <div className="flex items-center justify-center">
-                {membership.pendingAmount > 0 && (
-                  <Button onClick={handlePay} disabled={paying}>
-                    {paying ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <CreditCard className="h-4 w-4 mr-2" />}
-                    Pay Now
-                  </Button>
-                )}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      <Card>
-        <CardHeader><CardTitle className="text-lg">Payment History</CardTitle></CardHeader>
+      <Card className="border-gray-800 bg-gray-900/50">
         <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Receipt</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Amount</TableHead>
-                <TableHead>Method</TableHead>
-                <TableHead>Status</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {recentPayments?.length > 0 ? recentPayments.map((p: any) => (
-                <TableRow key={p._id}>
-                  <TableCell className="font-mono text-xs">{p.receiptNumber}</TableCell>
-                  <TableCell className="text-sm">{formatDate(p.paymentDate)}</TableCell>
-                  <TableCell className="font-semibold">{formatCurrency(p.finalAmount)}</TableCell>
-                  <TableCell className="capitalize text-sm">{p.method.replace("_", " ")}</TableCell>
-                  <TableCell><Badge variant={p.status === "completed" ? "success" : "secondary"}>{p.status}</Badge></TableCell>
-                </TableRow>
-              )) : (
-                <TableRow><TableCell colSpan={5} className="text-center py-8 text-gray-500">No payment history</TableCell></TableRow>
-              )}
-            </TableBody>
-          </Table>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-gray-800">
+                  <th className="text-left text-xs font-medium text-gray-400 uppercase tracking-wider px-6 py-3">Receipt</th>
+                  <th className="text-left text-xs font-medium text-gray-400 uppercase tracking-wider px-6 py-3">Date</th>
+                  <th className="text-left text-xs font-medium text-gray-400 uppercase tracking-wider px-6 py-3">Amount</th>
+                  <th className="text-left text-xs font-medium text-gray-400 uppercase tracking-wider px-6 py-3">Method</th>
+                  <th className="text-left text-xs font-medium text-gray-400 uppercase tracking-wider px-6 py-3">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {recentPayments?.length > 0 ? recentPayments.map((p: any) => (
+                  <tr key={p._id} className="border-b border-gray-800/50 hover:bg-gray-800/20 transition-colors">
+                    <td className="px-6 py-4 font-mono text-xs text-gray-300">{p.receiptNumber}</td>
+                    <td className="px-6 py-4 text-sm text-gray-400">{formatDate(p.paymentDate)}</td>
+                    <td className="px-6 py-4 font-semibold text-emerald-400">{formatCurrency(p.finalAmount)}</td>
+                    <td className="px-6 py-4 capitalize text-sm text-gray-300">{p.method.replace("_", " ")}</td>
+                    <td className="px-6 py-4">
+                      <Badge variant={p.status === "completed" ? "success" : "secondary"}>{p.status}</Badge>
+                    </td>
+                  </tr>
+                )) : (
+                  <tr>
+                    <td colSpan={5} className="px-6 py-12 text-center text-gray-500">No payment history</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         </CardContent>
       </Card>
-
-      <script src="https://checkout.razorpay.com/v1/checkout.js" async />
     </div>
   );
 }

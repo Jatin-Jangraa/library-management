@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Loader2, Wrench, Trash2, Layers, CheckCircle, Armchair, UserMinus, X, CreditCard, Calendar } from "lucide-react";
+import { Plus, Loader2, Trash2, Layers, CheckCircle, Armchair, UserMinus, X } from "lucide-react";
 
 function oneMonthLater() {
   const d = new Date();
@@ -35,14 +35,6 @@ const statusBg: Record<string, string> = {
   maintenance: "border-orange-500/30 bg-orange-500/10 hover:border-orange-400",
 };
 
-const statusLabel: Record<string, string> = {
-  available: "Available",
-  occupied: "Occupied",
-  reserved: "Reserved",
-  disabled: "Disabled",
-  maintenance: "Maintenance",
-};
-
 export default function SeatsPage() {
   const [seats, setSeats] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -58,9 +50,10 @@ export default function SeatsPage() {
   const [successMsg, setSuccessMsg] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
   const [showSeatInfo, setShowSeatInfo] = useState(false);
-  const [payForm, setPayForm] = useState({ amount: "", method: "cash", months: 1 });
   const [processing, setProcessing] = useState(false);
-  const [seatPendingAmount, setSeatPendingAmount] = useState(0);
+  const [addLoading, setAddLoading] = useState(false);
+  const [assignLoading, setAssignLoading] = useState(false);
+  const [releaseLoading, setReleaseLoading] = useState(false);
 
   const fetchData = async () => {
     try {
@@ -85,14 +78,20 @@ export default function SeatsPage() {
 
   const handleAddSeat = async () => {
     if (!seatForm.seatNumber) return;
-    await fetch("/api/admin/seats", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...seatForm, type: "seat" }),
-    });
-    setShowAddSeat(false);
-    setSeatForm({ seatNumber: "" });
-    fetchData();
+    setAddLoading(true);
+    try {
+      await fetch("/api/admin/seats", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...seatForm, type: "seat" }),
+      });
+      setShowAddSeat(false);
+      setSeatForm({ seatNumber: "" });
+      setSuccessMsg("Seat added!");
+      setTimeout(() => setSuccessMsg(""), 3000);
+      fetchData();
+    } catch {}
+    setAddLoading(false);
   };
 
   const handleBulkAdd = async () => {
@@ -125,6 +124,7 @@ export default function SeatsPage() {
   const handleAssign = async () => {
     setErrorMsg("");
     if (!selectedSeat || !assignForm.studentId) return;
+    setAssignLoading(true);
     try {
       const res = await fetch("/api/admin/seats/assign", {
         method: "POST",
@@ -134,6 +134,7 @@ export default function SeatsPage() {
       const data = await res.json();
       if (!res.ok) {
         setErrorMsg(data.error || "Failed to assign");
+        setAssignLoading(false);
         return;
       }
       setShowAssign(false);
@@ -145,83 +146,22 @@ export default function SeatsPage() {
     } catch {
       setErrorMsg("Failed to assign seat");
     }
+    setAssignLoading(false);
   };
 
   const handleRelease = async (seat: any) => {
-    if (!confirm(`Release seat ${seat.seatNumber}?`)) return;
+    setReleaseLoading(true);
     try {
       const res = await fetch(`/api/admin/seats/assign?seatId=${seat._id}`, { method: "DELETE" });
       if (res.ok) {
         setSuccessMsg(`Seat ${seat.seatNumber} released`);
         setTimeout(() => setSuccessMsg(""), 3000);
+        setShowSeatInfo(false);
+        setSelectedSeat(null);
         fetchData();
       }
     } catch {}
-  };
-
-  const handleExtend = async (assignmentId: string, months: number) => {
-    setProcessing(true);
-    try {
-      const res = await fetch("/api/admin/seats/assign", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ assignmentId, action: "extend", months }),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setSuccessMsg(data.message);
-        setTimeout(() => setSuccessMsg(""), 3000);
-        fetchData();
-      }
-    } catch {}
-    setProcessing(false);
-  };
-
-  const handlePayAndExtend = async (assignmentId: string) => {
-    setProcessing(true);
-    try {
-      const res = await fetch("/api/admin/seats/assign", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ assignmentId, action: "pay", ...payForm, amount: Number(payForm.amount) || 0 }),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setSuccessMsg(data.message);
-        setTimeout(() => setSuccessMsg(""), 3000);
-        setPayForm({ amount: "", method: "cash", months: 1 });
-        fetchData();
-      }
-    } catch {}
-    setProcessing(false);
-  };
-
-  const handleClearPending = async (assignmentId: string) => {
-    setProcessing(true);
-    try {
-      const res = await fetch("/api/admin/seats/assign", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ assignmentId, action: "clearPending", method: payForm.method }),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setSuccessMsg(data.message);
-        setTimeout(() => setSuccessMsg(""), 3000);
-        setSeatPendingAmount(0);
-        fetchData();
-      }
-    } catch {}
-    setProcessing(false);
-  };
-
-  const handleStatusChange = async (seatId: string, status: string) => {
-    await fetch(`/api/admin/seats/${seatId}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status }),
-    });
-    fetchData();
+    setReleaseLoading(false);
   };
 
   if (loading) {
@@ -248,7 +188,7 @@ export default function SeatsPage() {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-white">Seats</h1>
-          <p className="text-gray-400 text-sm mt-1">Click a seat to assign or release it</p>
+          <p className="text-gray-400 text-sm mt-1">Click a seat to view info or assign</p>
         </div>
         <div className="flex gap-2">
           <Button onClick={() => { setShowAddSeat(true); resetAssignForm(); }} className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg h-11 px-5">
@@ -293,8 +233,8 @@ export default function SeatsPage() {
       </div>
 
       <div className="flex gap-4 text-sm flex-wrap">
-        <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-emerald-500" /> Available - click to assign</div>
-        <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-red-500" /> Occupied - click for info</div>
+        <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-emerald-500" /> Available</div>
+        <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-red-500" /> Occupied</div>
         <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-orange-500" /> Maintenance</div>
         <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-gray-400" /> Disabled</div>
       </div>
@@ -313,7 +253,6 @@ export default function SeatsPage() {
                   setShowAssign(true);
                 } else if (seat.status === "occupied") {
                   setSelectedSeat(seat);
-                  setSeatPendingAmount(seat.pendingAmount || 0);
                   setShowSeatInfo(true);
                 }
               }}
@@ -346,8 +285,11 @@ export default function SeatsPage() {
         <DialogContent className="bg-gray-900 border-gray-800 max-w-md">
           <DialogHeader><DialogTitle className="text-white text-xl">Add Seat</DialogTitle></DialogHeader>
           <div className="space-y-4">
-            <div><Label className="text-gray-300">Seat Number *</Label><Input value={seatForm.seatNumber} onChange={(e) => setSeatForm({ ...seatForm, seatNumber: e.target.value })} placeholder="e.g. A1, 101, VIP-1" className="bg-gray-800/50 border-gray-700 text-white h-11" /></div>
-            <Button onClick={handleAddSeat} className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white h-12">Add Seat</Button>
+            <div><Label className="text-gray-300">Seat Number *</Label><Input value={seatForm.seatNumber} onChange={(e) => setSeatForm({ ...seatForm, seatNumber: e.target.value })} placeholder="e.g. A1, 101" className="bg-gray-800/50 border-gray-700 text-white h-11" /></div>
+            <Button onClick={handleAddSeat} disabled={addLoading || !seatForm.seatNumber} className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white h-12">
+              {addLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Plus className="h-4 w-4 mr-2" />}
+              Add Seat
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
@@ -387,7 +329,7 @@ export default function SeatsPage() {
               <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-sm p-3 rounded-xl">{errorMsg}</div>
             )}
             <div>
-              <Label className="text-gray-300">Which Student?</Label>
+              <Label className="text-gray-300">Student</Label>
               <Select value={assignForm.studentId} onValueChange={(v) => setAssignForm({ ...assignForm, studentId: v })}>
                 <SelectTrigger className="bg-gray-800/50 border-gray-700 text-white h-11"><SelectValue placeholder="Pick a student" /></SelectTrigger>
                 <SelectContent className="bg-gray-800 border-gray-700">
@@ -408,17 +350,19 @@ export default function SeatsPage() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div><Label className="text-gray-300">From</Label><Input type="date" value={assignForm.startDate} onChange={(e) => setAssignForm({ ...assignForm, startDate: e.target.value })} className="bg-gray-800/50 border-gray-700 text-white h-11" /></div>
-              <div><Label className="text-gray-300">Until (1 month)</Label><Input type="date" value={assignForm.endDate} onChange={(e) => setAssignForm({ ...assignForm, endDate: e.target.value })} className="bg-gray-800/50 border-gray-700 text-white h-11" /></div>
+              <div><Label className="text-gray-300">Until</Label><Input type="date" value={assignForm.endDate} onChange={(e) => setAssignForm({ ...assignForm, endDate: e.target.value })} className="bg-gray-800/50 border-gray-700 text-white h-11" /></div>
             </div>
-            <Button onClick={handleAssign} className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white h-12 text-base">
+            <Button onClick={handleAssign} disabled={assignLoading || !assignForm.studentId} className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white h-12 text-base">
+              {assignLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
               Assign Seat
             </Button>
           </div>
         </DialogContent>
       </Dialog>
-      {/* Seat Info Dialog */}
-      <Dialog open={showSeatInfo} onOpenChange={(open) => { setShowSeatInfo(open); if (!open) { setSelectedSeat(null); setPayForm({ amount: "", method: "cash", months: 1 }); } }}>
-        <DialogContent className="bg-gray-900 border-gray-800 max-w-md max-h-[90vh] overflow-y-auto">
+
+      {/* Seat Info Dialog - Simple: just student info + release */}
+      <Dialog open={showSeatInfo} onOpenChange={(open) => { setShowSeatInfo(open); if (!open) { setSelectedSeat(null); } }}>
+        <DialogContent className="bg-gray-900 border-gray-800 max-w-md">
           <DialogHeader>
             <DialogTitle className="text-white text-xl flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-red-500/20 border border-red-500/30 flex items-center justify-center">
@@ -470,95 +414,15 @@ export default function SeatsPage() {
                   </div>
                 </div>
 
-                {/* Pay & Extend Section */}
-                <div className="bg-gray-800/30 rounded-xl p-4 space-y-3 border border-gray-700/30">
-                  <p className="text-sm text-gray-400 font-medium flex items-center gap-2">
-                    <CreditCard className="h-4 w-4" /> Record Payment & Extend
-                  </p>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <Label className="text-gray-300 text-xs">Amount (₹)</Label>
-                      <Input
-                        type="number"
-                        min={0}
-                        value={payForm.amount}
-                        onChange={(e) => setPayForm({ ...payForm, amount: e.target.value })}
-                        className="bg-gray-800/50 border-gray-700 text-white h-10"
-                      />
-                    </div>
-                    <div>
-                      <Label className="text-gray-300 text-xs">Extend By</Label>
-                      <Select value={String(payForm.months)} onValueChange={(v) => setPayForm({ ...payForm, months: Number(v) })}>
-                        <SelectTrigger className="bg-gray-800/50 border-gray-700 text-white h-10"><SelectValue /></SelectTrigger>
-                        <SelectContent className="bg-gray-800 border-gray-700">
-                          <SelectItem value="1" className="text-white">1 Month</SelectItem>
-                          <SelectItem value="2" className="text-white">2 Months</SelectItem>
-                          <SelectItem value="3" className="text-white">3 Months</SelectItem>
-                          <SelectItem value="6" className="text-white">6 Months</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="col-span-2">
-                      <Label className="text-gray-300 text-xs">Payment Method</Label>
-                      <Select value={payForm.method} onValueChange={(v) => setPayForm({ ...payForm, method: v })}>
-                        <SelectTrigger className="bg-gray-800/50 border-gray-700 text-white h-10"><SelectValue /></SelectTrigger>
-                        <SelectContent className="bg-gray-800 border-gray-700">
-                          <SelectItem value="cash" className="text-white">Cash</SelectItem>
-                          <SelectItem value="upi" className="text-white">UPI</SelectItem>
-                          <SelectItem value="bank_transfer" className="text-white">Bank Transfer</SelectItem>
-                          <SelectItem value="online" className="text-white">Online</SelectItem>
-                          <SelectItem value="other" className="text-white">Other</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                  <Button
-                    onClick={() => handlePayAndExtend(a._id)}
-                    disabled={processing || !payForm.amount || Number(payForm.amount) <= 0}
-                    className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white h-11"
-                  >
-                    {processing ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <CreditCard className="h-4 w-4 mr-2" />}
-                    Pay ₹{payForm.amount || 0} & Extend {payForm.months} Month{payForm.months > 1 ? "s" : ""}
-                  </Button>
-                </div>
-
-                {seatPendingAmount > 0 && (
-                  <div className="bg-amber-500/10 rounded-xl p-4 space-y-3 border border-amber-500/30">
-                    <p className="text-sm text-amber-400 font-medium flex items-center gap-2">
-                      <CreditCard className="h-4 w-4" /> Pending Fee: ₹{seatPendingAmount}
-                    </p>
-                    <Button
-                      onClick={() => handleClearPending(a._id)}
-                      disabled={processing}
-                      className="w-full bg-amber-600 hover:bg-amber-700 text-white h-11"
-                    >
-                      {processing ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <CreditCard className="h-4 w-4 mr-2" />}
-                      Clear Pending ₹{seatPendingAmount}
-                    </Button>
-                  </div>
-                )}
-
-                {/* Extend Without Payment */}
-                <Button
-                  variant="outline"
-                  onClick={() => handleExtend(a._id, 1)}
-                  disabled={processing}
-                  className="w-full border-gray-700 text-gray-300 hover:text-white h-11"
-                >
-                  <Calendar className="h-4 w-4 mr-2" /> Extend 1 Month (No Payment)
-                </Button>
-
                 {/* Release */}
                 <Button
                   variant="destructive"
                   className="w-full h-11"
-                  onClick={async () => {
-                    await handleRelease(selectedSeat);
-                    setShowSeatInfo(false);
-                    setSelectedSeat(null);
-                  }}
+                  disabled={releaseLoading}
+                  onClick={() => handleRelease(selectedSeat)}
                 >
-                  <UserMinus className="h-4 w-4 mr-2" /> Release This Seat
+                  {releaseLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <UserMinus className="h-4 w-4 mr-2" />}
+                  Release This Seat
                 </Button>
               </div>
             );

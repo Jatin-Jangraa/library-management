@@ -24,8 +24,6 @@ export async function GET(req: NextRequest) {
 
     const totalStudents = await User.countDocuments({ role: "student" });
     const activeStudents = await Membership.countDocuments({ status: "active", endDate: { $gte: now } });
-    const expiredStudents = await Membership.countDocuments({ status: "expired" });
-    const pendingFeesStudents = await Membership.countDocuments({ pendingAmount: { $gt: 0 } });
 
     const totalSeats = await Seat.countDocuments({ isActive: true });
     const occupiedSeats = await SeatAssignment.countDocuments({ isActive: true, startDate: { $lte: now }, endDate: { $gte: now } });
@@ -42,12 +40,6 @@ export async function GET(req: NextRequest) {
       { $group: { _id: null, total: { $sum: "$finalAmount" } } },
     ]);
     const monthlyFeeCollection = monthlyPayments[0]?.total || 0;
-
-    const pendingAmount = await Membership.aggregate([
-      { $match: { pendingAmount: { $gt: 0 } } },
-      { $group: { _id: null, total: { $sum: "$pendingAmount" } } },
-    ]);
-    const pendingFeeAmount = pendingAmount[0]?.total || 0;
 
     const onlinePayments = await Payment.aggregate([
       { $match: { status: "completed", method: "online", paymentDate: { $gte: startOfMonth, $lte: endOfMonth } } },
@@ -101,8 +93,6 @@ export async function GET(req: NextRequest) {
     return success({
       totalStudents,
       activeStudents,
-      expiredStudents,
-      pendingFeesStudents,
       totalSeats,
       occupiedSeats,
       availableSeats,
@@ -111,13 +101,10 @@ export async function GET(req: NextRequest) {
       fullDayOccupancy,
       todayAttendance,
       monthlyFeeCollection,
-      pendingFeeAmount,
       onlinePaymentCollection,
       offlinePaymentCollection,
       monthlyExpenses: totalExpenses,
       netIncome,
-      monthlyCollectionChart,
-      admissionsChart,
       recentPayments,
     });
   } catch (err: any) {
