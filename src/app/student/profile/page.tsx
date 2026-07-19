@@ -13,7 +13,8 @@ export default function StudentProfilePage() {
   useEffect(() => {
     fetch("/api/student/profile")
       .then((r) => r.json())
-      .then((d) => { setProfile(d.data); setLoading(false); });
+      .then((d) => { setProfile(d.data); setLoading(false); })
+      .catch(() => setLoading(false));
   }, []);
 
   if (loading) return <div className="flex justify-center py-20"><Loader2 className="h-8 w-8 animate-spin" /></div>;

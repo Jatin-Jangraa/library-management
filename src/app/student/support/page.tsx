@@ -20,9 +20,11 @@ export default function StudentSupportPage() {
   const [saving, setSaving] = useState(false);
 
   const fetchTickets = async () => {
-    const res = await fetch("/api/student/support");
-    const data = await res.json();
-    setTickets(data.data || []);
+    try {
+      const res = await fetch("/api/student/support");
+      const data = await res.json();
+      setTickets(data.data || []);
+    } catch {}
     setLoading(false);
   };
 
@@ -30,11 +32,13 @@ export default function StudentSupportPage() {
 
   const handleCreate = async () => {
     setSaving(true);
-    await fetch("/api/student/support", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
-    });
+    try {
+      await fetch("/api/student/support", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+    } catch {}
     setShowNew(false);
     setForm({ category: "other", subject: "", description: "", priority: "medium" });
     fetchTickets();
@@ -76,8 +80,8 @@ export default function StudentSupportPage() {
                     <p className="text-sm text-gray-500 mt-1">{t.description}</p>
                     <p className="text-xs text-gray-400 mt-2">{formatDate(t.createdAt)}</p>
                     {t.adminResponse && (
-                      <div className="mt-3 bg-blue-50 p-3 rounded-lg">
-                        <p className="text-xs text-blue-600 font-medium mb-1">Admin Response:</p>
+                      <div className="mt-3 bg-blue-500/10 border border-blue-500/20 p-3 rounded-lg">
+                        <p className="text-xs text-blue-400 font-medium mb-1">Admin Response:</p>
                         <p className="text-sm">{t.adminResponse}</p>
                       </div>
                     )}

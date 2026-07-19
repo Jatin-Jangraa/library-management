@@ -12,29 +12,35 @@ export default function StudentNotificationsPage() {
   const [loading, setLoading] = useState(true);
 
   const fetchNotifications = async () => {
-    const res = await fetch("/api/student/notifications");
-    const data = await res.json();
-    setNotifications(data.data || []);
+    try {
+      const res = await fetch("/api/student/notifications");
+      const data = await res.json();
+      setNotifications(data.data || []);
+    } catch {}
     setLoading(false);
   };
 
   useEffect(() => { fetchNotifications(); }, []);
 
   const markAllRead = async () => {
-    await fetch("/api/student/notifications/read", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({}),
-    });
+    try {
+      await fetch("/api/student/notifications/read", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+      });
+    } catch {}
     fetchNotifications();
   };
 
   const markRead = async (id: string) => {
-    await fetch("/api/student/notifications/read", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ notificationId: id }),
-    });
+    try {
+      await fetch("/api/student/notifications/read", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ notificationId: id }),
+      });
+    } catch {}
     fetchNotifications();
   };
 
@@ -68,7 +74,7 @@ export default function StudentNotificationsPage() {
                       <Badge variant="outline" className="text-xs">{n.type.replace(/_/g, " ")}</Badge>
                       {!n.read && <span className="w-2 h-2 rounded-full bg-primary" />}
                     </div>
-                    <p className="text-sm text-gray-600">{n.message}</p>
+                    <p className="text-sm text-gray-400">{n.message}</p>
                     <p className="text-xs text-gray-400 mt-2">{formatDate(n.createdAt)}</p>
                   </div>
                   {!n.read && (

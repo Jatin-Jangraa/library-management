@@ -18,9 +18,11 @@ export default function StudentAttendancePage() {
 
   const fetchAttendance = async () => {
     setLoading(true);
-    const res = await fetch(`/api/student/attendance?month=${month}&year=${year}`);
-    const d = await res.json();
-    setData(d.data);
+    try {
+      const res = await fetch(`/api/student/attendance?month=${month}&year=${year}`);
+      const d = await res.json();
+      setData(d.data);
+    } catch {}
     setLoading(false);
   };
 

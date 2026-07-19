@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Loader2, CalendarDays } from "lucide-react";
-import { formatDate } from "@/lib/utils";
 
 export default function StudentEventsPage() {
   const [events, setEvents] = useState<any[]>([]);
@@ -12,7 +11,8 @@ export default function StudentEventsPage() {
   useEffect(() => {
     fetch("/api/public/content")
       .then((r) => r.json())
-      .then((d) => { setEvents(d.data?.upcomingEvents || []); setLoading(false); });
+      .then((d) => { setEvents(d.data?.upcomingEvents || []); setLoading(false); })
+      .catch(() => setLoading(false));
   }, []);
 
   if (loading) return <div className="flex justify-center py-20"><Loader2 className="h-8 w-8 animate-spin" /></div>;

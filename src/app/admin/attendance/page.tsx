@@ -18,18 +18,20 @@ export default function AttendancePage() {
 
   const fetchData = async () => {
     setLoading(true);
-    const [stuRes, attRes] = await Promise.all([
-      fetch("/api/admin/students?limit=100"),
-      fetch(`/api/admin/attendance?date=${date}`),
-    ]);
-    const stuData = await stuRes.json();
-    const attData = await attRes.json();
-    setStudents(stuData.data?.students || []);
-    const recordMap: Record<string, string> = {};
-    (attData.data || []).forEach((r: any) => {
-      recordMap[r.studentId?._id || r.studentId] = r.status;
-    });
-    setRecords(recordMap);
+    try {
+      const [stuRes, attRes] = await Promise.all([
+        fetch("/api/admin/students?limit=100"),
+        fetch(`/api/admin/attendance?date=${date}`),
+      ]);
+      const stuData = await stuRes.json();
+      const attData = await attRes.json();
+      setStudents(stuData.data?.students || []);
+      const recordMap: Record<string, string> = {};
+      (attData.data || []).forEach((r: any) => {
+        recordMap[r.studentId?._id || r.studentId] = r.status;
+      });
+      setRecords(recordMap);
+    } catch {}
     setLoading(false);
   };
 
@@ -37,14 +39,18 @@ export default function AttendancePage() {
 
   const handleSave = async () => {
     setSaving(true);
-    const recordsArray = Object.entries(records).map(([studentId, status]) => ({ studentId, status }));
-    await fetch("/api/admin/attendance", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ date, records: recordsArray }),
-    });
+    try {
+      const recordsArray = Object.entries(records).map(([studentId, status]) => ({ studentId, status }));
+      await fetch("/api/admin/attendance", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ date, records: recordsArray }),
+      });
+      alert("Attendance saved!");
+    } catch {
+      alert("Failed to save attendance");
+    }
     setSaving(false);
-    alert("Attendance saved!");
   };
 
   return (
