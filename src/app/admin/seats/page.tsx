@@ -44,8 +44,9 @@ export default function SeatsPage() {
   const [selectedSeat, setSelectedSeat] = useState<any>(null);
   const [seatForm, setSeatForm] = useState({ seatNumber: "" });
   const [bulkForm, setBulkForm] = useState({ prefix: "", startNumber: "1", count: "1" });
-  const [assignForm, setAssignForm] = useState({ studentId: "", shiftType: "full_day", startDate: today(), endDate: oneMonthLater() });
+  const [assignForm, setAssignForm] = useState({ studentId: "", shiftType: "full_day", planId: "", startDate: today(), endDate: oneMonthLater() });
   const [students, setStudents] = useState<any[]>([]);
+  const [plans, setPlans] = useState<any[]>([]);
   const [bulkLoading, setBulkLoading] = useState(false);
   const [successMsg, setSuccessMsg] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
@@ -72,8 +73,14 @@ export default function SeatsPage() {
     setStudents(data.data?.students || []);
   };
 
+  const fetchPlans = async () => {
+    const res = await fetch("/api/admin/plans");
+    const data = await res.json();
+    setPlans(data.data || []);
+  };
+
   const resetAssignForm = () => {
-    setAssignForm({ studentId: "", shiftType: "full_day", startDate: today(), endDate: oneMonthLater() });
+    setAssignForm({ studentId: "", shiftType: "full_day", planId: "", startDate: today(), endDate: oneMonthLater() });
   };
 
   const handleAddSeat = async () => {
@@ -249,6 +256,7 @@ export default function SeatsPage() {
                   setSelectedSeat(seat);
                   resetAssignForm();
                   fetchStudents();
+                  fetchPlans();
                   setErrorMsg("");
                   setShowAssign(true);
                 } else if (seat.status === "occupied") {
@@ -345,6 +353,20 @@ export default function SeatsPage() {
                   <SelectItem value="full_day" className="text-white">Full Day</SelectItem>
                   <SelectItem value="morning" className="text-white">Morning</SelectItem>
                   <SelectItem value="evening" className="text-white">Evening</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label className="text-gray-300">Membership Plan</Label>
+              <Select value={assignForm.planId} onValueChange={(v) => {
+                const selected = plans.find((p: any) => p._id === v);
+                setAssignForm({ ...assignForm, planId: v, shiftType: selected?.shiftType || assignForm.shiftType });
+              }}>
+                <SelectTrigger className="bg-gray-800/50 border-gray-700 text-white h-11"><SelectValue placeholder="Select a plan" /></SelectTrigger>
+                <SelectContent className="bg-gray-800 border-gray-700">
+                  {plans.filter((p: any) => !assignForm.shiftType || p.shiftType === assignForm.shiftType).map((p: any) => (
+                    <SelectItem key={p._id} value={p._id} className="text-white">{p.name} — ₹{p.monthlyFee}/mo</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>

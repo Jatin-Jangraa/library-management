@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
 
     await connectDB();
     const body = await req.json();
-    const { seatId, studentId, shiftType, startDate, endDate } = body;
+    const { seatId, studentId, shiftType, startDate, endDate, planId } = body;
 
     const seat = await Seat.findById(seatId);
     if (!seat) return badRequest("Seat not found");
@@ -68,7 +68,24 @@ export async function POST(req: NextRequest) {
     });
 
     await Seat.findByIdAndUpdate(seatId, { status: "occupied" });
-    await Membership.findOneAndUpdate({ studentId, status: "active" }, { seatId, shiftType });
+
+    const existingMembership = await Membership.findOne({ studentId, status: "active" });
+    if (existingMembership) {
+      await Membership.findByIdAndUpdate(existingMembership._id, { seatId, shiftType });
+    } else if (planId) {
+      await Membership.create({
+        studentId,
+        planId,
+        seatId,
+        shiftType,
+        startDate,
+        endDate,
+        status: "active",
+        totalAmount: 0,
+        amountPaid: 0,
+        assignedBy: user.id,
+      });
+    }
 
     return success(assignment, "Seat assigned successfully");
   } catch (err: any) {
